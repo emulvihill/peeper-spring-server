@@ -4,6 +4,7 @@ import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
 import com.snazzyrobot.peeper.repository.FeedRepository;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
+import com.snazzyrobot.peeper.utility.PatternUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,10 @@ public class VideoSnapService {
         final VideoSnap r = VideoSnap.builder().date(date).data(input.getData())
                 .feed(feedRepository.getReferenceById(input.getFeedId())).build();
 
-        var comparison = ollamaVisionService.compareImages(input.getData(), input.getData());
+        String before = PatternUtil.stripBase64DataUriPrefix(input.getData());
+        String after = PatternUtil.stripBase64DataUriPrefix(input.getData());
+        // var comparison = ollamaVisionService.compareImages(before, after);
+        var comparison = ollamaVisionService.describeImage(before); // TODO: llama3.2-vision only supports single image.
         logger.info("Comparison: " + comparison);
         return videoSnapRepository.save(r);
     }
