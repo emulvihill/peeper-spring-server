@@ -1,0 +1,21 @@
+spring:
+  web:
+    resources:
+      static-locations: file:static-content, classpath:/META-INF/resources/, classpath:/resources/, classpath:/static/, classpath:/public/
+  datasource:
+    url: jdbc:mysql://localhost:3306/peeper
+    username: root
+    password: password
+  application:
+    name: peeper-backend
+  graphql:
+    graphiql:
+      enabled: true
+  flyway:
+    create-schemas: true
+    schemas: peeper
+    default-schema: peeper
+    init-sqls: CREATE SCHEMA IF NOT EXISTS peeper;
+
+server:
+  port: 5000

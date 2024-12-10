@@ -1,0 +1,39 @@
+type VideoSnap {
+    id: ID!
+    feed: Feed!
+    date: String!
+    data: String!
+}
+
+input VideoSnapInput {
+    feedId: ID!
+    data: String!
+}
+
+type Feed {
+    id: ID!
+    userId: Int!
+    name: String!
+}
+
+input FeedInput {
+    userId: Int!
+    name: String!
+}
+
+# The Root Query for the application
+type Query {
+    videoSnapsForFeed(feedId: ID!): [VideoSnap]!
+    videoSnaps: [VideoSnap]!
+    videoSnap(id: ID!): VideoSnap
+    feeds: [Feed]!
+    feed(id: ID!):Feed
+}
+
+# The Root Mutation for the application
+type Mutation {
+    createVideoSnap(input: VideoSnapInput!) : VideoSnap!
+    deleteVideoSnap(id: ID!): Boolean
+    createFeed(input: FeedInput!) : Feed!
+    deleteFeed(id: ID!): Boolean
+}
