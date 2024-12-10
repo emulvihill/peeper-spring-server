@@ -4,6 +4,8 @@ import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
 import com.snazzyrobot.peeper.repository.FeedRepository;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
@@ -11,13 +13,17 @@ import java.util.List;
 
 @Service
 public class VideoSnapService {
+    private static final Logger logger = LoggerFactory.getLogger(VideoSnapService.class);
 
     private final VideoSnapRepository videoSnapRepository;
     private final FeedRepository feedRepository;
+    private final OllamaVisionService ollamaVisionService;
 
-    public VideoSnapService(VideoSnapRepository videoSnapRepository, FeedRepository feedRepository) {
+    public VideoSnapService(VideoSnapRepository videoSnapRepository, FeedRepository feedRepository,
+                            OllamaVisionService ollamaVisionService) {
         this.videoSnapRepository = videoSnapRepository;
         this.feedRepository = feedRepository;
+        this.ollamaVisionService = ollamaVisionService;
     }
 
     public List<VideoSnap> list() {
@@ -37,6 +43,8 @@ public class VideoSnapService {
         final VideoSnap r = VideoSnap.builder().date(date).data(input.getData())
                 .feed(feedRepository.getReferenceById(input.getFeedId())).build();
 
+        var comparison = ollamaVisionService.compareImages(input.getData(), input.getData());
+        logger.info("Comparison: " + comparison);
         return videoSnapRepository.save(r);
     }
 

@@ -20,6 +20,17 @@ spring:
     schemas: peeper
     default-schema: peeper
     init-sqls: CREATE SCHEMA IF NOT EXISTS peeper;
-
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: llama3.2:latest
+          x-model: llama3.2-vision
+          temperature: 1.0
+    openai:
+        api-key: (set_env_variable)
+        base-url: https://api.openai.com
+        chat.options.model: gpt-4o
 server:
   port: 5000
