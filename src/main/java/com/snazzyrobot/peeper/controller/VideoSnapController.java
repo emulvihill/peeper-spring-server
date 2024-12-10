@@ -9,6 +9,7 @@ import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
+import java.io.IOException;
 import java.util.List;
 
 @Controller
@@ -36,7 +37,7 @@ public class VideoSnapController {
     }
 
     @MutationMapping
-    public VideoSnap createVideoSnap(@Argument VideoSnapInput input) {
+    public VideoSnap createVideoSnap(@Argument VideoSnapInput input) throws IOException {
         return videosnapService.createVideoSnap(input);
     }
 

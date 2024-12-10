@@ -11,4 +11,8 @@ import java.util.Optional;
 @Repository
 public interface VideoSnapRepository extends JpaRepository<VideoSnap, Long> {
     List<VideoSnap> findByFeed(Optional<Feed> byId);
+
+    Optional<VideoSnap> findTopByOrderByIdDesc();
+
+    Optional<VideoSnap> findTopByOrderByDateDesc();
 }

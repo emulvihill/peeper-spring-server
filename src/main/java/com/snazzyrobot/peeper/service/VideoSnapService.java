@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -39,17 +40,23 @@ public class VideoSnapService {
         videoSnapRepository.deleteById(id);
     }
 
-    public VideoSnap createVideoSnap(VideoSnapInput input) {
+    public VideoSnap createVideoSnap(VideoSnapInput input) throws IOException {
         final OffsetDateTime date = OffsetDateTime.now();
-        final VideoSnap r = VideoSnap.builder().date(date).data(input.getData())
+        final VideoSnap latest = VideoSnap.builder().date(date).data(input.getData())
                 .feed(feedRepository.getReferenceById(input.getFeedId())).build();
-
-        String before = PatternUtil.stripBase64DataUriPrefix(input.getData());
         String after = PatternUtil.stripBase64DataUriPrefix(input.getData());
-        // var comparison = ollamaVisionService.compareImages(before, after);
-        var comparison = ollamaVisionService.describeImage(before); // TODO: llama3.2-vision only supports single image.
+
+        VideoSnap beforeSnap = videoSnapRepository.findTopByOrderByDateDesc().orElse(null);
+        if (beforeSnap != null) {
+            logger.info("Before snap: {}, {} ", beforeSnap.getId(), beforeSnap.getDate());
+        }
+        String before = beforeSnap != null ? PatternUtil.stripBase64DataUriPrefix(beforeSnap.getData()) : null;
+        var persisted = videoSnapRepository.saveAndFlush(latest);
+        // TODO: llama3.2-vision only supports single image.
+        var comparison = before != null ? ollamaVisionService.compareImagesUsingCombining(before, after) :
+                ollamaVisionService.describeImage(after);
         logger.info("Comparison: " + comparison);
-        return videoSnapRepository.save(r);
+        return persisted;
     }
 
     public List<VideoSnap> findAllForFeed(long feedId) {
