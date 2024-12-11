@@ -21,11 +21,11 @@ public class FeedService {
         return feedRepository.findAll();
     }
 
-    public Feed findById(long id) {
+    public Feed findById(Long id) {
         return feedRepository.findById(id).orElse(null);
     }
 
-    public void deleteById(long id) {
+    public void deleteById(Long id) {
         feedRepository.deleteById(id);
     }
 

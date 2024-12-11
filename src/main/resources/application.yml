@@ -17,8 +17,9 @@ spring:
       allowed-methods: GET,POST
   flyway:
     create-schemas: true
-    schemas: peeper
+    enabled: true
     default-schema: peeper
+    schemas: peeper
     init-sqls: CREATE SCHEMA IF NOT EXISTS peeper;
   ai:
     ollama:

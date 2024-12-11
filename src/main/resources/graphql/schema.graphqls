@@ -23,6 +23,7 @@ input FeedInput {
 
 # The Root Query for the application
 type Query {
+    compareVideoSnapsById(id1: ID!, id2: ID!): String!
     videoSnapsForFeed(feedId: ID!): [VideoSnap]!
     videoSnaps: [VideoSnap]!
     videoSnap(id: ID!): VideoSnap

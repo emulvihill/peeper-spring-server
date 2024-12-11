@@ -27,6 +27,11 @@ public class ImageUtil {
         g.drawImage(img1, 0, 0, null);
         g.drawImage(img2, img1.getWidth(), 0, null);
 
+        // Draw vertical line separating the two images
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(3f));
+        g.drawLine(img1.getWidth() - 1, 0, img1.getWidth() - 1, height);
+
         g.dispose();
         return combinedImage;
     }

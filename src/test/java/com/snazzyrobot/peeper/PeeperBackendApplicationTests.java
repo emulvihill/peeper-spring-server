@@ -1,10 +1,10 @@
-package com.snazzyrobot.testprojbackend;
+package com.snazzyrobot.peeper;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TestprojBackendApplicationTests {
+class PeeperBackendApplicationTests {
 
     @Test
     void contextLoads() {

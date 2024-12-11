@@ -1,5 +1,6 @@
 package com.snazzyrobot.peeper.service;
 
+import com.snazzyrobot.peeper.entity.Feed;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
 import com.snazzyrobot.peeper.repository.FeedRepository;
@@ -32,34 +33,51 @@ public class VideoSnapService {
         return videoSnapRepository.findAll();
     }
 
-    public VideoSnap findById(long id) {
+    public VideoSnap findById(Long id) {
         return videoSnapRepository.findById(id).orElse(null);
     }
 
-    public void deleteById(long id) {
+    public void deleteById(Long id) {
         videoSnapRepository.deleteById(id);
     }
 
-    public VideoSnap createVideoSnap(VideoSnapInput input) throws IOException {
+    public VideoSnap createVideoSnap(VideoSnapInput input) {
+        logger.info("Creating video snap for feed: {}", input.getFeedId());
+
+        OffsetDateTime date = OffsetDateTime.now();
+        Feed feed = feedRepository.getReferenceById(input.getFeedId());
+        VideoSnap snap = VideoSnap.builder().date(date).data(input.getData())
+                .feed(feed).build();
+        VideoSnap persistedSnap = videoSnapRepository.save(snap);
+        return persistedSnap;
+    }
+
+    public VideoSnap experimentalCreateAndCompareVideoSnap(VideoSnapInput input) throws IOException {
+        logger.info("Creating video snap for feed: {}", input.getFeedId());
+
         final OffsetDateTime date = OffsetDateTime.now();
         final VideoSnap latest = VideoSnap.builder().date(date).data(input.getData())
                 .feed(feedRepository.getReferenceById(input.getFeedId())).build();
-        String after = PatternUtil.stripBase64DataUriPrefix(input.getData());
+        String afterData = PatternUtil.stripBase64DataUriPrefix(input.getData());
 
-        VideoSnap beforeSnap = videoSnapRepository.findTopByOrderByDateDesc().orElse(null);
-        if (beforeSnap != null) {
-            logger.info("Before snap: {}, {} ", beforeSnap.getId(), beforeSnap.getDate());
+        VideoSnap prevSnap = videoSnapRepository.findTopByOrderByDateDesc().orElse(null);
+        String prevData = prevSnap != null ? PatternUtil.stripBase64DataUriPrefix(prevSnap.getData()) : null;
+        var persistedSnap = videoSnapRepository.save(latest);
+
+        if (prevSnap != null) {
+            logger.info("Previous snap: {}, {} ", prevSnap.getId(), prevSnap.getDate());
         }
-        String before = beforeSnap != null ? PatternUtil.stripBase64DataUriPrefix(beforeSnap.getData()) : null;
-        var persisted = videoSnapRepository.saveAndFlush(latest);
+        logger.info("Persisted snap: {}, {} ", persistedSnap.getId(), persistedSnap.getDate());
+
         // TODO: llama3.2-vision only supports single image.
-        var comparison = before != null ? ollamaVisionService.compareImagesUsingCombining(before, after) :
-                ollamaVisionService.describeImage(after);
+        var comparison = prevData != null ? ollamaVisionService.compareImagesUsingCombining(prevData, afterData) :
+                ollamaVisionService.describeImage(afterData);
         logger.info("Comparison: " + comparison);
-        return persisted;
+
+        return persistedSnap;
     }
 
-    public List<VideoSnap> findAllForFeed(long feedId) {
+    public List<VideoSnap> findAllForFeed(Long feedId) {
         return videoSnapRepository.findByFeed(feedRepository.findById(feedId));
     }
 }

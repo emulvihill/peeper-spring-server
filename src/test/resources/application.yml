@@ -1,11 +1,19 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/testproj_test
+    url: jdbc:mysql://localhost:3306/peeper_test
     username: root
     password: password
   application:
-    name: testproj-backend
+    name: peeper-backend
   flyway:
     create-schemas: true
-    schemas: testproj_test
-    init-sqls: CREATE SCHEMA IF NOT EXISTS testproj_test;
+    enabled: true
+    schemas: peeper_test
+  graphql:
+      cors:
+        allow-credentials: true
+        allowed-origins: http://localhost:4200
+        allowed-methods: GET,POST
+  ai:
+    openai:
+      api-key: foobar
