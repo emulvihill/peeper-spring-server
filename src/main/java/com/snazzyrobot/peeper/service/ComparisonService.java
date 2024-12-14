@@ -2,6 +2,7 @@ package com.snazzyrobot.peeper.service;
 
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
+import com.snazzyrobot.peeper.utility.PatternUtil;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,6 +26,8 @@ public class ComparisonService {
         String before = id1Earlier ? snap1.getData() : snap2.getData();
         String after = id1Earlier ? snap2.getData() : snap1.getData();
 
-        return ollamaVisionService.compareImagesUsingCombining(before, after);
+        return ollamaVisionService.compareImagesUsingCombining(
+                PatternUtil.stripBase64DataUriPrefix(before),
+                PatternUtil.stripBase64DataUriPrefix(after));
     }
 }

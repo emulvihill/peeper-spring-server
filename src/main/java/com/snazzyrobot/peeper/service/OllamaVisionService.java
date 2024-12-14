@@ -45,7 +45,7 @@ public class OllamaVisionService {
                                 .withContent("Compare these two images closely. What, if anything, is different between these two images?")
                                 .withImages(List.of(before, after))
                                 .build()))
-                .withOptions(OllamaOptions.create().withTemperature(0.9))
+                .withOptions(OllamaOptions.create().withTemperature(0.0))
                 .build();
 
         var response = ollamaApi.chat(request);
