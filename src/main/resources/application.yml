@@ -26,15 +26,18 @@ spring:
       base-url: http://localhost:11434
       chat:
         options:
-          xxx-model: llama3.2:latest
-          model: llama3.2-vision:latest
+          model: llama3.2:latest
+          xxx-model: llama3.2-vision:latest
           temperature: 0.0
     openai:
         api-key: (set_env_variable)
         base-url: https://api.openai.com
         chat:
           options:
-            model: gpt-4o
+            model: gpt-4o-mini
             temperature: 0.0
 server:
   port: 5000
+
+peeper:
+  comparison-service-provider: "ollama"

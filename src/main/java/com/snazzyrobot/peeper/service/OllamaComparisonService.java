@@ -22,7 +22,7 @@ public class OllamaComparisonService implements ComparisonService {
 
     public String compareVideoSnapsById(Long id1, Long id2) throws IOException {
         var snapData = getOrderedVideoSnapData(id1, id2);
-        return ollamaVisionService.compareImagesUsingCombining(PatternUtil.stripBase64DataUriPrefix(snapData.earlierData()), PatternUtil.stripBase64DataUriPrefix(snapData.laterData()));
+        return ollamaVisionService.compareImages(PatternUtil.stripBase64DataUriPrefix(snapData.earlierData()), PatternUtil.stripBase64DataUriPrefix(snapData.laterData()));
     }
 
     private SnapData getOrderedVideoSnapData(Long id1, Long id2) {

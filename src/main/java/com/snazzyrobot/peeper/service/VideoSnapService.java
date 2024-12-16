@@ -20,13 +20,12 @@ public class VideoSnapService {
 
     private final VideoSnapRepository videoSnapRepository;
     private final FeedRepository feedRepository;
-    private final OllamaVisionService ollamaVisionService;
+    private final ComparisonService comparisonService;
 
-    public VideoSnapService(VideoSnapRepository videoSnapRepository, FeedRepository feedRepository,
-                            OllamaVisionService ollamaVisionService) {
+    public VideoSnapService(VideoSnapRepository videoSnapRepository, FeedRepository feedRepository, ComparisonService comparisonService) {
         this.videoSnapRepository = videoSnapRepository;
         this.feedRepository = feedRepository;
-        this.ollamaVisionService = ollamaVisionService;
+        this.comparisonService = comparisonService;
     }
 
     public List<VideoSnap> list() {
@@ -52,7 +51,7 @@ public class VideoSnapService {
         return persistedSnap;
     }
 
-    public VideoSnap experimentalCreateAndCompareVideoSnap(VideoSnapInput input) throws IOException {
+    public VideoSnap createVideoSnapAndCompareWithPrevious(VideoSnapInput input) throws IOException {
         logger.info("Creating video snap for feed: {}", input.getFeedId());
 
         final OffsetDateTime date = OffsetDateTime.now();
@@ -69,9 +68,9 @@ public class VideoSnapService {
         }
         logger.info("Persisted snap: {}, {} ", persistedSnap.getId(), persistedSnap.getDate());
 
-        // TODO: llama3.2-vision only supports single image.
-        var comparison = prevData != null ? ollamaVisionService.compareImagesUsingCombining(prevData, afterData) :
-                ollamaVisionService.describeImage(afterData);
+        var comparison = prevData != null ?
+                comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId()) :
+                "two images are not available for comparison";
         logger.info("Comparison: " + comparison);
 
         return persistedSnap;
