@@ -13,7 +13,7 @@ spring:
       enabled: true
     cors:
       allow-credentials: true
-      allowed-origins: http://localhost:4200
+      allowed-origins: http://localhost:3000,http://localhost:4200
       allowed-methods: GET,POST
   flyway:
     create-schemas: true
