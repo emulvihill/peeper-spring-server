@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class OpenAIServiceTest {
+class OpenAIVisionServiceTest {
 
     @BeforeAll
     static void beforeAll() {
@@ -31,7 +31,7 @@ class OpenAIServiceTest {
         when(mockChatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
         String modelName = "gpt-4.0";
-        OpenAIService service = new OpenAIService(mockChatModel, modelName);
+        OpenAIVisionService service = new OpenAIVisionService(mockChatModel, modelName);
 
         // Execute method under test
         String result = service.compareImages(Base64Samples.base64Star, Base64Samples.base64Star);
@@ -49,7 +49,7 @@ class OpenAIServiceTest {
         // Mock dependencies
         OpenAiChatModel mockChatModel = mock(OpenAiChatModel.class);
         String modelName = "gpt-4.0";
-        OpenAIService service = new OpenAIService(mockChatModel, modelName);
+        OpenAIVisionService service = new OpenAIVisionService(mockChatModel, modelName);
 
         // Assertions
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> {

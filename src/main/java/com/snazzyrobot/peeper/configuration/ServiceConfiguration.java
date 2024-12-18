@@ -14,13 +14,13 @@ public class ServiceConfiguration {
     private static final String DEFAULT_COMPARISON_PROVIDER = "openai";
 
     private final VideoSnapRepository videoSnapRepository;
-    private final OpenAIService openAIService;
+    private final OpenAIVisionService openAIVisionService;
     private final OllamaVisionService ollamaVisionService;
 
     // Constructor to inject dependencies manually
-    public ServiceConfiguration(VideoSnapRepository videoSnapRepository, OpenAIService openAIService, OllamaVisionService ollamaVisionService) {
+    public ServiceConfiguration(VideoSnapRepository videoSnapRepository, OpenAIVisionService openAIVisionService, OllamaVisionService ollamaVisionService) {
         this.videoSnapRepository = videoSnapRepository;
-        this.openAIService = openAIService;
+        this.openAIVisionService = openAIVisionService;
         this.ollamaVisionService = ollamaVisionService;
     }
 
@@ -31,7 +31,7 @@ public class ServiceConfiguration {
 
     private ComparisonService createComparisonService(String provider) {
         if (Objects.equals(provider, "openai")) {
-            return new OpenAIComparisonService(videoSnapRepository, openAIService);
+            return new OpenAIComparisonService(videoSnapRepository, openAIVisionService);
         } else if (Objects.equals(provider, "ollama")) {
             return new OllamaComparisonService(videoSnapRepository, ollamaVisionService);
         }

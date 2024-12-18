@@ -13,11 +13,11 @@ public class OpenAIComparisonService implements ComparisonService {
     private static final String VIDEO_SNAP_NOT_FOUND = "VideoSnap with id %d not found";
 
     private final VideoSnapRepository videoSnapRepository;
-    private final OpenAIService openAIService;
+    private final OpenAIVisionService openAIService;
 
-    public OpenAIComparisonService(VideoSnapRepository videoSnapRepository, OpenAIService openAIService) {
+    public OpenAIComparisonService(VideoSnapRepository videoSnapRepository, OpenAIVisionService openAIVisionService) {
         this.videoSnapRepository = videoSnapRepository;
-        this.openAIService = openAIService;
+        this.openAIService = openAIVisionService;
     }
 
     public String compareVideoSnapsById(Long id1, Long id2) throws IOException {

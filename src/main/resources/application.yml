@@ -40,4 +40,4 @@ server:
   port: 5000
 
 peeper:
-  comparison-service-provider: "ollama"
+  comparison-service-provider: "openai"
