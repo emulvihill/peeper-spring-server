@@ -44,11 +44,21 @@ public class OllamaVisionService {
 
         var request = ChatRequest.builder(modelName).withStream(false) // not streaming
                 .withMessages(List.of(Message.builder(Role.SYSTEM).withContent("""
-                        You are a security expert. You are looking for anything unusual. \
-                        When comparing images, do not worry about contrast or image orientation.\
+                        You are a security expert. You are looking at two images, "before" and "after".
+                        
+                        You are looking for the following list of things:
+                        1. people entering or exiting the image.
+                        2. Items appearing or disappearing from the image.
+                        3. A person changing what they are holding, picking up or putting down objects.
+                        4. A person changing the activity they are performing.
+                        
+                        When comparing images, do not worry about contrast or image orientation.
                         Be concise in your descriptions.
-                        Format your response with one difference per line, and begin each line with three asterisks, '***'""").build(), Message.builder(Role.USER)
-                        .withContent("Compare these two images closely. What, if anything, is different between these two images?")
+                        Each difference you notice between the "before" and "after" images should be formatted on its own line, and begin each line with three asterisks, '***'
+                        """).build(), Message.builder(Role.USER)
+                        .withContent("""
+                                Compare these two images, "before" and "after", closely. What, if anything, is different between these two images?
+                                """)
                         .withImages(List.of(before, after)).build()))
                 .build();
 

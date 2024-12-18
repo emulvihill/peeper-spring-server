@@ -13,12 +13,14 @@ public class ServiceConfiguration {
 
     private static final String DEFAULT_COMPARISON_PROVIDER = "openai";
 
+    private final ComparisonProcessorService comparisonProcessorService;
     private final VideoSnapRepository videoSnapRepository;
     private final OpenAIVisionService openAIVisionService;
     private final OllamaVisionService ollamaVisionService;
 
     // Constructor to inject dependencies manually
-    public ServiceConfiguration(VideoSnapRepository videoSnapRepository, OpenAIVisionService openAIVisionService, OllamaVisionService ollamaVisionService) {
+    public ServiceConfiguration(ComparisonProcessorService comparisonProcessorService, VideoSnapRepository videoSnapRepository, OpenAIVisionService openAIVisionService, OllamaVisionService ollamaVisionService) {
+        this.comparisonProcessorService = comparisonProcessorService;
         this.videoSnapRepository = videoSnapRepository;
         this.openAIVisionService = openAIVisionService;
         this.ollamaVisionService = ollamaVisionService;
@@ -31,9 +33,9 @@ public class ServiceConfiguration {
 
     private ComparisonService createComparisonService(String provider) {
         if (Objects.equals(provider, "openai")) {
-            return new OpenAIComparisonService(videoSnapRepository, openAIVisionService);
+            return new OpenAIComparisonService(comparisonProcessorService, videoSnapRepository, openAIVisionService);
         } else if (Objects.equals(provider, "ollama")) {
-            return new OllamaComparisonService(videoSnapRepository, ollamaVisionService);
+            return new OllamaComparisonService(comparisonProcessorService, videoSnapRepository, ollamaVisionService);
         }
 
         throw new IllegalArgumentException("Invalid comparison provider: " + provider);

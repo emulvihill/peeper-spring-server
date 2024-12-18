@@ -1,6 +1,8 @@
 package com.snazzyrobot.peeper.service;
 
 import com.snazzyrobot.peeper.utility.ImageUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -24,17 +26,21 @@ import java.util.List;
 @Service
 public class OpenAIVisionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(OpenAIVisionService.class);
+
     private final ChatClient chatClient;
     private final String modelName;
+    private final ComparisonProcessorService comparisonProcessorService;
     private final OpenAiChatModel chatModel;
 
-    public OpenAIVisionService(OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o}") String modelName) {
+    public OpenAIVisionService(ComparisonProcessorService comparisonProcessorService, OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o}") String modelName) {
+        this.comparisonProcessorService = comparisonProcessorService;
         this.chatModel = chatModel;
         this.modelName = modelName;
         this.chatClient = ChatClient.create(chatModel);
     }
 
-    public String compareImages(String before, String after) throws IOException, IllegalArgumentException {
+    public ChatResponse compareImages(String before, String after) throws IOException, IllegalArgumentException {
 
         File temp1 = null, temp2 = null;
         ChatResponse response;
@@ -49,14 +55,24 @@ public class OpenAIVisionService {
             var imageResource2 = new PathResource(temp2.getAbsolutePath());
 
             var systemMessage = new SystemMessage("""
-                    You are a security expert. You are looking for anything unusual. \
-                    When comparing images, do not worry about contrast or image orientation.\
-                    Be concise in your descriptions.
-                    Format your response with one difference per line, and begin each line with three asterisks, '***'""");
-            var userMessage = new UserMessage("Explain what differences do you see between these two pictures? Just describe the image.", new Media(MimeTypeUtils.IMAGE_PNG, imageResource1), new Media(MimeTypeUtils.IMAGE_PNG, imageResource2));
+                        You are a security expert. You are looking at two images, "before" and "after".
+                    
+                        You are looking for the following list of things:
+                        1. people entering or exiting the image.
+                        2. Items appearing or disappearing from the image.
+                        3. A person changing what they are holding, picking up or putting down objects.
+                        4. A person changing the activity they are performing.
+                        5. None of the above conditions are detected. In this case state "No differences detected".
+                    
+                        When comparing images, do not worry about contrast or image orientation.
+                        Be concise in your descriptions.
+                        Each difference you notice between the "before" and "after" images should be formatted on its own line, and begin each line with three asterisks, '***'.
+                    """);
+            var userMessage = new UserMessage("Compare these two images, \"before\" and \"after\", closely. What, if anything, is different between these two images? Just describe the image.", new Media(MimeTypeUtils.IMAGE_PNG, imageResource1), new Media(MimeTypeUtils.IMAGE_PNG, imageResource2));
 
             var options = chatModel.getDefaultOptions();
             response = chatModel.call(new Prompt(List.of(systemMessage, userMessage), OpenAiChatOptions.builder().withModel(modelName).build()));
+            logger.info(response.toString());
 
         } finally {
             if (temp1 != null) {
@@ -67,7 +83,7 @@ public class OpenAIVisionService {
             }
         }
 
-        return response.toString();
+        return response;
     }
 
     private File createTempImageFile(BufferedImage image) throws IOException {

@@ -29,15 +29,16 @@ class OpenAIVisionServiceTest {
         ChatResponse mockResponse = mock(ChatResponse.class);
         when(mockResponse.toString()).thenReturn("Comparison result");
         when(mockChatModel.call(any(Prompt.class))).thenReturn(mockResponse);
+        ComparisonProcessorService mockCps = mock(ComparisonProcessorService.class);
 
         String modelName = "gpt-4.0";
-        OpenAIVisionService service = new OpenAIVisionService(mockChatModel, modelName);
+        OpenAIVisionService service = new OpenAIVisionService(mockCps, mockChatModel, modelName);
 
         // Execute method under test
-        String result = service.compareImages(Base64Samples.base64Star, Base64Samples.base64Star);
+        ChatResponse result = service.compareImages(Base64Samples.base64Star, Base64Samples.base64Star);
 
         // Assertions
-        assertEquals("Comparison result", result);
+        assertEquals("Comparison result", result.toString());
 
         // Verify interactions
         verify(mockChatModel, times(1)).call(any(Prompt.class));
@@ -48,8 +49,9 @@ class OpenAIVisionServiceTest {
 
         // Mock dependencies
         OpenAiChatModel mockChatModel = mock(OpenAiChatModel.class);
+        ComparisonProcessorService mockCps = mock(ComparisonProcessorService.class);
         String modelName = "gpt-4.0";
-        OpenAIVisionService service = new OpenAIVisionService(mockChatModel, modelName);
+        OpenAIVisionService service = new OpenAIVisionService(mockCps, mockChatModel, modelName);
 
         // Assertions
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> {
