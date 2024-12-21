@@ -30,11 +30,9 @@ public class OpenAIVisionService {
 
     private final ChatClient chatClient;
     private final String modelName;
-    private final ComparisonProcessorService comparisonProcessorService;
     private final OpenAiChatModel chatModel;
 
-    public OpenAIVisionService(ComparisonProcessorService comparisonProcessorService, OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o}") String modelName) {
-        this.comparisonProcessorService = comparisonProcessorService;
+    public OpenAIVisionService(OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o-mini}") String modelName) {
         this.chatModel = chatModel;
         this.modelName = modelName;
         this.chatClient = ChatClient.create(chatModel);

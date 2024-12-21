@@ -1,5 +1,6 @@
 package com.snazzyrobot.peeper.controller;
 
+import com.snazzyrobot.peeper.dto.VideoUpdate;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
 import com.snazzyrobot.peeper.service.VideoSnapService;
@@ -15,35 +16,40 @@ import java.util.List;
 @Controller
 public class VideoSnapController {
 
-    private final VideoSnapService videosnapService;
+    private final VideoSnapService videoSnapService;
 
-    public VideoSnapController(@Autowired VideoSnapService videosnapService) {
-        this.videosnapService = videosnapService;
+    public VideoSnapController(@Autowired VideoSnapService videoSnapService) {
+        this.videoSnapService = videoSnapService;
     }
 
     @QueryMapping
     public VideoSnap videoSnap(@Argument String id) {
-        return videosnapService.findById(Long.parseLong(id));
+        return videoSnapService.findById(Long.parseLong(id));
     }
 
     @QueryMapping
     public List<VideoSnap> videoSnaps() {
-        return videosnapService.list();
+        return videoSnapService.list();
     }
 
     @QueryMapping
     public List<VideoSnap> videoSnapsForFeed(@Argument String feedId) {
-        return videosnapService.findAllForFeed(Long.parseLong(feedId));
+        return videoSnapService.findAllForFeed(Long.parseLong(feedId));
     }
 
     @MutationMapping
     public VideoSnap createVideoSnap(@Argument VideoSnapInput input) throws IOException {
-        return videosnapService.createVideoSnap(input);
+        return videoSnapService.createVideoSnap(input);
+    }
+
+    @MutationMapping
+    public VideoUpdate createAndCompareVideoSnap(@Argument VideoSnapInput input) throws IOException {
+        return videoSnapService.createAndCompareVideoSnap(input);
     }
 
     @MutationMapping
     public Boolean deleteVideoSnap(@Argument Long id) {
-        videosnapService.deleteById(id);
+        videoSnapService.deleteById(id);
         return true;
     }
 }

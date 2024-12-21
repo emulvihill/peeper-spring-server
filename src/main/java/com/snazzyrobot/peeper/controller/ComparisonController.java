@@ -7,6 +7,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 
 import java.io.IOException;
+import java.util.List;
 
 @Controller
 public class ComparisonController {
@@ -19,7 +20,7 @@ public class ComparisonController {
     }
 
     @QueryMapping
-    public String compareVideoSnapsById(@Argument Long id1, @Argument Long id2) throws IOException {
+    public List<String> compareVideoSnapsById(@Argument Long id1, @Argument Long id2) throws IOException {
         return comparisonService.compareVideoSnapsById(id1, id2);
     }
 }

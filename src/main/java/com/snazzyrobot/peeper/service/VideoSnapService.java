@@ -1,19 +1,23 @@
 package com.snazzyrobot.peeper.service;
 
+import com.snazzyrobot.peeper.dto.VideoUpdate;
 import com.snazzyrobot.peeper.entity.Feed;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
+import com.snazzyrobot.peeper.exception.ResourceNotFoundException;
 import com.snazzyrobot.peeper.repository.FeedRepository;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
-import com.snazzyrobot.peeper.utility.PatternUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 
+@Validated
 @Service
 public class VideoSnapService {
     private static final Logger logger = LoggerFactory.getLogger(VideoSnapService.class);
@@ -33,50 +37,57 @@ public class VideoSnapService {
     }
 
     public VideoSnap findById(Long id) {
-        return videoSnapRepository.findById(id).orElse(null);
+        return videoSnapRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("VideoSnap not found with id: " + id));
     }
 
     public void deleteById(Long id) {
         videoSnapRepository.deleteById(id);
     }
 
-    public VideoSnap createVideoSnap(VideoSnapInput input) {
-        logger.info("Creating video snap for feed: {}", input.getFeedId());
+    public VideoSnap createVideoSnap(@NotNull VideoSnapInput input) {
+        validateInput(input);
 
-        OffsetDateTime date = OffsetDateTime.now();
-        Feed feed = feedRepository.getReferenceById(input.getFeedId());
-        VideoSnap snap = VideoSnap.builder().date(date).data(input.getData())
-                .feed(feed).build();
-        VideoSnap persistedSnap = videoSnapRepository.save(snap);
-        return persistedSnap;
+        Feed feed = feedRepository.findById(input.getFeedId())
+                .orElseThrow(() -> new ResourceNotFoundException("Feed not found with id: " + input.getFeedId()));
+        VideoSnap snap = VideoSnap.builder()
+                .date(OffsetDateTime.now())
+                .data(input.getData())
+                .feed(feed)
+                .build();
+        return videoSnapRepository.save(snap);
     }
 
-    public VideoSnap createVideoSnapAndCompareWithPrevious(VideoSnapInput input) throws IOException {
-        logger.info("Creating video snap for feed: {}", input.getFeedId());
+    public VideoUpdate createAndCompareVideoSnap(@NotNull VideoSnapInput input) throws IOException {
+        validateInput(input);
 
         final OffsetDateTime date = OffsetDateTime.now();
         final VideoSnap latest = VideoSnap.builder().date(date).data(input.getData())
                 .feed(feedRepository.getReferenceById(input.getFeedId())).build();
-        String afterData = PatternUtil.stripBase64DataUriPrefix(input.getData());
 
         VideoSnap prevSnap = videoSnapRepository.findTopByOrderByDateDesc().orElse(null);
-        String prevData = prevSnap != null ? PatternUtil.stripBase64DataUriPrefix(prevSnap.getData()) : null;
         var persistedSnap = videoSnapRepository.save(latest);
 
+        List<String> comparison;
         if (prevSnap != null) {
-            logger.info("Previous snap: {}, {} ", prevSnap.getId(), prevSnap.getDate());
+            comparison = comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId());
+        } else {
+            comparison = List.of("Previous image is not available for comparison.");
         }
-        logger.info("Persisted snap: {}, {} ", persistedSnap.getId(), persistedSnap.getDate());
 
-        var comparison = prevData != null ?
-                comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId()) :
-                "two images are not available for comparison";
-        logger.info("Comparison: " + comparison);
-
-        return persistedSnap;
+        return new VideoUpdate(persistedSnap, prevSnap, comparison);
     }
 
     public List<VideoSnap> findAllForFeed(Long feedId) {
         return videoSnapRepository.findByFeed(feedRepository.findById(feedId));
+    }
+
+    private void validateInput(VideoSnapInput input) {
+        if (input.getData() == null || input.getData().isEmpty()) {
+            throw new IllegalArgumentException("Video snap data cannot be empty");
+        }
+        if (input.getFeedId() == null) {
+            throw new IllegalArgumentException("Feed ID cannot be null");
+        }
     }
 }

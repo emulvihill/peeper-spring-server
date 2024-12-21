@@ -5,6 +5,12 @@ type VideoSnap {
     data: String!
 }
 
+type VideoUpdate {
+    current: VideoSnap!,
+    previous: VideoSnap,
+    comparison: [String]!
+}
+
 input VideoSnapInput {
     feedId: ID!
     data: String!
@@ -33,6 +39,7 @@ type Query {
 
 # The Root Mutation for the application
 type Mutation {
+    createAndCompareVideoSnap(input: VideoSnapInput!) : VideoUpdate!
     createVideoSnap(input: VideoSnapInput!) : VideoSnap!
     deleteVideoSnap(id: ID!): Boolean
     createFeed(input: FeedInput!) : Feed!

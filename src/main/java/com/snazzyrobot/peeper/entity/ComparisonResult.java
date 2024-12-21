@@ -21,12 +21,12 @@ public class ComparisonResult {
     @Column(unique=true, nullable = false)
     private String responseId;
 
-    @OneToOne
-    @JoinColumn(name = "before_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "before_id", referencedColumnName = "id", nullable = false)
     private VideoSnap before;
 
-    @OneToOne
-    @JoinColumn(name = "after_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "after_id", referencedColumnName = "id", nullable = false)
     private VideoSnap after;
 
     @Column(nullable = false)

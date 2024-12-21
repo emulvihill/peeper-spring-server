@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class OllamaComparisonService implements ComparisonService {
@@ -26,7 +27,7 @@ public class OllamaComparisonService implements ComparisonService {
         this.ollamaVisionService = ollamaVisionService;
     }
 
-    public String compareVideoSnapsById(Long id1, Long id2) throws IOException {
+    public List<String> compareVideoSnapsById(Long id1, Long id2) throws IOException {
         logger.info("compareVideoSnapsById, id {} to id {}", id1, id2);
         var snapData = getOrderedVideoSnapData(id1, id2);
         return ollamaVisionService.compareImages(PatternUtil.stripBase64DataUriPrefix(snapData.earlierData()), PatternUtil.stripBase64DataUriPrefix(snapData.laterData()));

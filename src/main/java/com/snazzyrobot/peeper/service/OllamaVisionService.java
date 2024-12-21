@@ -22,6 +22,7 @@ import java.util.List;
 public class OllamaVisionService {
 
     private static final Logger logger = LoggerFactory.getLogger(OllamaVisionService.class);
+    public static final String COMPARE_DELIMITER = "\\*\\*\\*";
 
     private final String modelName;
     private final OllamaApi ollamaApi;
@@ -38,7 +39,7 @@ public class OllamaVisionService {
         return response.toString();
     }
 
-    public String compareImages(String before, String after) {
+    public List<String> compareImages(String before, String after) {
 
         displayImagesInConsole(before, after);
 
@@ -64,7 +65,7 @@ public class OllamaVisionService {
 
         var response = ollamaApi.chat(request);
 
-        return response.toString();
+        return List.of(response.toString().split(COMPARE_DELIMITER));
     }
 
     private void displayImagesInConsole(String before, String after) {
