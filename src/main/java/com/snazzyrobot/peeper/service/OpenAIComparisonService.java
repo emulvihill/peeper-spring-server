@@ -1,5 +1,6 @@
 package com.snazzyrobot.peeper.service;
 
+import com.snazzyrobot.peeper.dto.VideoUpdate;
 import com.snazzyrobot.peeper.entity.ComparisonResult;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
@@ -9,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OpenAIComparisonService implements ComparisonService {
@@ -30,7 +29,7 @@ public class OpenAIComparisonService implements ComparisonService {
         this.openAIService = openAIVisionService;
     }
 
-    public List<String> compareVideoSnapsById(Long id1, Long id2) throws IOException {
+    public VideoUpdate compareVideoSnapsById(Long id1, Long id2) throws IOException {
         logger.info("compareVideoSnapsById, id {} to id {}", id1, id2);
 
         VideoSnap snap1 = videoSnapRepository.findById(id1).orElseThrow(() -> new IllegalArgumentException(String.format(VIDEO_SNAP_NOT_FOUND, id1)));
@@ -45,12 +44,8 @@ public class OpenAIComparisonService implements ComparisonService {
         var processedResponse = comparisonProcessorService.processComparisonResponse(before, after, response);
 
         processedResponse.forEach(r -> logger.info(r.toString()));
-
         List<String> responses = processedResponse.stream().map(ComparisonResult::getResult).toList();
 
-        return responses.stream()
-                .map(r -> r.split("\n"))
-                .flatMap(Arrays::stream)
-                .collect(Collectors.toList());
+        return new VideoUpdate(after, before, responses);
     }
 }

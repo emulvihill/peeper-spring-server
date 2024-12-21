@@ -5,7 +5,6 @@ import lib.ASCII;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaApi.ChatRequest;
@@ -19,10 +18,9 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class OllamaVisionService {
+public class OllamaVisionService implements VisionService {
 
     private static final Logger logger = LoggerFactory.getLogger(OllamaVisionService.class);
-    public static final String COMPARE_DELIMITER = "\\*\\*\\*";
 
     private final String modelName;
     private final OllamaApi ollamaApi;
@@ -34,12 +32,8 @@ public class OllamaVisionService {
         this.modelName = modelName;
     }
 
-    public String askQuestion(String question) {
-        ChatResponse response = chatModel.call(new Prompt(question));
-        return response.toString();
-    }
-
-    public List<String> compareImages(String before, String after) {
+    @Override
+    public ChatResponse compareImages(String before, String after) {
 
         displayImagesInConsole(before, after);
 
@@ -65,7 +59,8 @@ public class OllamaVisionService {
 
         var response = ollamaApi.chat(request);
 
-        return List.of(response.toString().split(COMPARE_DELIMITER));
+        // TODO Make this work!!!
+        return ChatResponse.builder().build();
     }
 
     private void displayImagesInConsole(String before, String after) {
@@ -102,7 +97,6 @@ public class OllamaVisionService {
 
         return response.toString();
     }
-
 
     public String describeImage(String base64Image) {
 

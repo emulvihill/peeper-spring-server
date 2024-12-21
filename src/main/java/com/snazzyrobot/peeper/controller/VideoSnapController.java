@@ -4,6 +4,8 @@ import com.snazzyrobot.peeper.dto.VideoUpdate;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
 import com.snazzyrobot.peeper.service.VideoSnapService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -15,6 +17,8 @@ import java.util.List;
 
 @Controller
 public class VideoSnapController {
+
+    private static final Logger logger = LoggerFactory.getLogger(VideoSnapController.class);
 
     private final VideoSnapService videoSnapService;
 
@@ -44,6 +48,7 @@ public class VideoSnapController {
 
     @MutationMapping
     public VideoUpdate createAndCompareVideoSnap(@Argument VideoSnapInput input) throws IOException {
+        logger.info("Creating new video snap");
         return videoSnapService.createAndCompareVideoSnap(input);
     }
 

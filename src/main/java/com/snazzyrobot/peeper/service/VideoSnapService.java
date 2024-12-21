@@ -62,20 +62,19 @@ public class VideoSnapService {
         validateInput(input);
 
         final OffsetDateTime date = OffsetDateTime.now();
+        final Feed feed = feedRepository.findById(input.getFeedId())
+                .orElseThrow(() -> new ResourceNotFoundException("Feed not found with id: " + input.getFeedId()));
         final VideoSnap latest = VideoSnap.builder().date(date).data(input.getData())
-                .feed(feedRepository.getReferenceById(input.getFeedId())).build();
+                .feed(feed).build();
 
         VideoSnap prevSnap = videoSnapRepository.findTopByOrderByDateDesc().orElse(null);
         var persistedSnap = videoSnapRepository.save(latest);
 
-        List<String> comparison;
         if (prevSnap != null) {
-            comparison = comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId());
+            return comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId());
         } else {
-            comparison = List.of("Previous image is not available for comparison.");
+            return new VideoUpdate(persistedSnap, null, List.of("Previous image is not available for comparison."));
         }
-
-        return new VideoUpdate(persistedSnap, prevSnap, comparison);
     }
 
     public List<VideoSnap> findAllForFeed(Long feedId) {
