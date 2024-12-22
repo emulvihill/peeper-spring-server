@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
-public class OllamaComparisonService implements ComparisonService {
+public class ComparisonServiceImpl implements ComparisonService {
 
-    private static final Logger logger = LoggerFactory.getLogger(OllamaComparisonService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ComparisonServiceImpl.class);
 
     private static final String VIDEO_SNAP_NOT_FOUND = "VideoSnap with id %d not found";
 
@@ -26,10 +26,10 @@ public class OllamaComparisonService implements ComparisonService {
     private final VideoSnapRepository videoSnapRepository;
     private final OllamaVisionService ollamaVisionService;
 
-    public OllamaComparisonService(ComparisonProcessorService comparisonProcessorService,
-                                   VideoSnapRepository videoSnapRepository,
-                                   SnapComparisonRepository snapComparisonRepository,
-                                   OllamaVisionService ollamaVisionService) {
+    public ComparisonServiceImpl(ComparisonProcessorService comparisonProcessorService,
+                                 VideoSnapRepository videoSnapRepository,
+                                 SnapComparisonRepository snapComparisonRepository,
+                                 OllamaVisionService ollamaVisionService) {
         this.comparisonProcessorService = comparisonProcessorService;
         this.snapComparisonRepository = snapComparisonRepository;
         this.videoSnapRepository = videoSnapRepository;

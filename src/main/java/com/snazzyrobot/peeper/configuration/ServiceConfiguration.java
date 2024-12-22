@@ -14,37 +14,27 @@ public class ServiceConfiguration {
 
     private static final String DEFAULT_COMPARISON_PROVIDER = "openai";
 
-    private final ComparisonProcessorService comparisonProcessorService;
-    private final VideoSnapRepository videoSnapRepository;
-    private final SnapComparisonRepository comparisonRepository;
-    private final OpenAIVisionService openAIVisionService;
-    private final OllamaVisionService ollamaVisionService;
-
     // Constructor to inject dependencies manually
     public ServiceConfiguration(ComparisonProcessorService comparisonProcessorService,
                                 VideoSnapRepository videoSnapRepository,
                                 SnapComparisonRepository comparisonRepository,
                                 OpenAIVisionService openAIVisionService,
                                 OllamaVisionService ollamaVisionService) {
-        this.comparisonProcessorService = comparisonProcessorService;
-        this.videoSnapRepository = videoSnapRepository;
-        this.comparisonRepository = comparisonRepository;
-        this.openAIVisionService = openAIVisionService;
-        this.ollamaVisionService = ollamaVisionService;
+
     }
 
     @Bean
-    public ComparisonService comparisonService(@Value("${peeper.comparison-service-provider:" + DEFAULT_COMPARISON_PROVIDER + "}") String comparisonProvider) {
-        return createComparisonService(comparisonProvider);
+    public VisionService visionService(@Value("${peeper.comparison-service-provider:" + DEFAULT_COMPARISON_PROVIDER + "}") String comparisonProvider) {
+        return createVisionService(comparisonProvider);
     }
 
-    private ComparisonService createComparisonService(String provider) {
+    private VisionService createVisionService(String provider) {
         if (Objects.equals(provider, "openai")) {
-            return new OpenAIComparisonService(comparisonProcessorService, videoSnapRepository, comparisonRepository, openAIVisionService);
+            return new OpenAIVisionService();
         } else if (Objects.equals(provider, "ollama")) {
-            return new OllamaComparisonService(comparisonProcessorService, videoSnapRepository, comparisonRepository, ollamaVisionService);
+            return new OllamaVisionService();
         }
 
-        throw new IllegalArgumentException("Invalid comparison provider: " + provider);
+        throw new IllegalArgumentException("Invalid vision provider: " + provider);
     }
 }

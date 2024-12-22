@@ -11,6 +11,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.Media;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.PathResource;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,8 @@ public class OpenAIVisionService {
     private final OpenAiChatModel chatModel;
 
     public OpenAIVisionService(OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o}") String modelName) {
-        this.chatModel = chatModel;
+
+        this.chatModel = new OpenAiChatModel(new OpenAiApi());
         this.modelName = modelName;
         this.chatClient = ChatClient.create(chatModel);
     }
