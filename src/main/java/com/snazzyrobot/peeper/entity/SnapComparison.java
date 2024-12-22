@@ -2,7 +2,11 @@ package com.snazzyrobot.peeper.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
@@ -12,11 +16,22 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "snap_comparison")
-public class SnapComparison {
+@EntityListeners(AuditingEntityListener.class)
+public class SnapComparison implements EntityDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "created", nullable = false, updatable = false)
+    @CreatedDate
+    @ToString.Exclude
+    private OffsetDateTime created;
+
+    @Column(name = "modified", nullable = false)
+    @LastModifiedDate
+    @ToString.Exclude
+    private OffsetDateTime modified;
 
     @OneToOne
     private VideoSnap current;
@@ -28,4 +43,10 @@ public class SnapComparison {
     @CollectionTable(name = "snap_comparison_detections")
     @Column(name = "detection")
     private List<String> comparison;
+
+    @Column(nullable = false)
+    String rawComparison;
+
+    @Column(nullable = false)
+    private boolean resultDetected;
 }

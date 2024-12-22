@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface VideoSnapRepository extends JpaRepository<VideoSnap, Long> {
     List<VideoSnap> findByFeed(Optional<Feed> byId);
 
-    Optional<VideoSnap> findTopByOrderByDateDesc();
+    Optional<VideoSnap> findTopByOrderByCreatedDesc();
 
     VideoSnap findFirstByIdLessThanAndFeedOrderByIdDesc(Long id, Feed feed);
 }

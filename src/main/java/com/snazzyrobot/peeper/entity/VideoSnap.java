@@ -2,6 +2,9 @@ package com.snazzyrobot.peeper.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
 
@@ -12,18 +15,26 @@ import java.time.OffsetDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VideoSnap {
+@EntityListeners(AuditingEntityListener.class)
+public class VideoSnap implements EntityDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
 
+    @Column(name = "created", nullable = false, updatable = false)
+    @CreatedDate
+    @ToString.Exclude
+    private OffsetDateTime created;
+
+    @Column(name = "modified", nullable = false)
+    @LastModifiedDate
+    @ToString.Exclude
+    private OffsetDateTime modified;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "feed_id", referencedColumnName = "id")
     private Feed feed;
-
-    @Column(nullable = false)
-    private OffsetDateTime date;
 
     @Column(nullable = false)
     private String data;

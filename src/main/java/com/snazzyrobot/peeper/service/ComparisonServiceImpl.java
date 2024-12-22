@@ -11,6 +11,9 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ComparisonServiceImpl implements ComparisonService {
@@ -19,16 +22,13 @@ public class ComparisonServiceImpl implements ComparisonService {
 
     private static final String VIDEO_SNAP_NOT_FOUND = "VideoSnap with id %d not found";
 
-    private final ComparisonProcessorService comparisonProcessorService;
     private final SnapComparisonRepository snapComparisonRepository;
     private final VideoSnapRepository videoSnapRepository;
     private final VisionService visionService;
 
-    public ComparisonServiceImpl(ComparisonProcessorService comparisonProcessorService,
-                                 VideoSnapRepository videoSnapRepository,
+    public ComparisonServiceImpl(VideoSnapRepository videoSnapRepository,
                                  SnapComparisonRepository snapComparisonRepository,
                                  VisionService visionService) {
-        this.comparisonProcessorService = comparisonProcessorService;
         this.snapComparisonRepository = snapComparisonRepository;
         this.videoSnapRepository = videoSnapRepository;
         this.visionService = visionService;
@@ -41,23 +41,39 @@ public class ComparisonServiceImpl implements ComparisonService {
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.before.getData()),
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.after.getData()));
 
-        var comparisons = comparisonProcessorService.processComparisonResponse(snapSequence.before, snapSequence.after, chatResponse);
+        var comparisons = getResultListStream(chatResponse)
+                .flatMap(ComparisonServiceImpl::findValidComparisons).toList();
 
-        var update = SnapComparison.builder().current(snapSequence.after).previous(snapSequence.before).comparison(comparisons).build();
-        snapComparisonRepository.save(update);
+        var rawComparison = getResultListStream(chatResponse)
+                .collect(Collectors.joining("&&&"));
 
-        return update;
+        var update = SnapComparison.builder()
+                .current(snapSequence.after)
+                .previous(snapSequence.before)
+                .resultDetected(!comparisons.isEmpty())
+                .rawComparison(rawComparison)
+                .comparison(comparisons).build();
+
+        return snapComparisonRepository.save(update);
+    }
+
+    private static Stream<String> getResultListStream(ChatResponse chatResponse) {
+        return chatResponse.getResults().stream().map(result -> result.getOutput().getContent());
     }
 
     private SnapSequence getOrderedSnapSequence(Long id1, Long id2) {
         VideoSnap snap1 = videoSnapRepository.findById(id1).orElseThrow(() -> new IllegalArgumentException(String.format(VIDEO_SNAP_NOT_FOUND, id1)));
         VideoSnap snap2 = videoSnapRepository.findById(id2).orElseThrow(() -> new IllegalArgumentException(String.format(VIDEO_SNAP_NOT_FOUND, id2)));
 
-        var isSnap1Earlier = snap1.getDate().isBefore(snap2.getDate());
+        var isSnap1Earlier = snap1.getCreated().isBefore(snap2.getCreated());
 
         return isSnap1Earlier ? new SnapSequence(snap1, snap2) : new SnapSequence(snap2, snap1);
     }
 
     private record SnapSequence(VideoSnap before, VideoSnap after) {
+    }
+
+    private static Stream<String> findValidComparisons(String str) {
+        return Arrays.stream(str.split("\\s*\\*\\*\\*\\s*")).skip(1);
     }
 }

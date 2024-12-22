@@ -56,7 +56,6 @@ public class VideoSnapService {
         Feed feed = feedRepository.findById(input.getFeedId())
                 .orElseThrow(() -> new ResourceNotFoundException("Feed not found with id: " + input.getFeedId()));
         VideoSnap snap = VideoSnap.builder()
-                .date(OffsetDateTime.now())
                 .data(input.getData())
                 .feed(feed)
                 .build();
@@ -72,10 +71,10 @@ public class VideoSnapService {
         final OffsetDateTime date = OffsetDateTime.now();
         final Feed feed = feedRepository.findById(input.getFeedId())
                 .orElseThrow(() -> new ResourceNotFoundException("Feed not found with id: " + input.getFeedId()));
-        final VideoSnap latest = VideoSnap.builder().date(date).data(input.getData())
+        final VideoSnap latest = VideoSnap.builder().data(input.getData())
                 .feed(feed).build();
 
-        VideoSnap prevSnap = videoSnapRepository.findTopByOrderByDateDesc().orElse(null);
+        VideoSnap prevSnap = videoSnapRepository.findTopByOrderByCreatedDesc().orElse(null);
         var persistedSnap = videoSnapRepository.save(latest);
 
         if (prevSnap != null) {
