@@ -24,7 +24,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 @Service
-public class OpenAIVisionService {
+public class OpenAIVisionService implements VisionService {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenAIVisionService.class);
 
@@ -32,25 +32,25 @@ public class OpenAIVisionService {
     private final String modelName;
     private final OpenAiChatModel chatModel;
 
-    public OpenAIVisionService(OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o}") String modelName) {
+    public OpenAIVisionService(OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o-mini}") String modelName) {
         this.chatModel = chatModel;
         this.modelName = modelName;
         this.chatClient = ChatClient.create(chatModel);
     }
 
-    public ChatResponse compareImages(String before, String after) throws IOException, IllegalArgumentException {
+    public ChatResponse compareImages(String before, String after) throws IllegalArgumentException, IOException {
 
-        File temp1 = null, temp2 = null;
+        File beforeTmp = null, afterTmp = null;
         ChatResponse response;
 
         try {
-            var img1 = ImageUtil.decodeBase64ToImage(before);
-            temp1 = createTempImageFile(img1);
-            var imageResource1 = new PathResource(temp1.getAbsolutePath());
+            var beforeImg = ImageUtil.decodeBase64ToImage(before);
+            beforeTmp = createTempImageFile(beforeImg);
+            var beforeResource = new PathResource(beforeTmp.getAbsolutePath());
 
-            var img2 = ImageUtil.decodeBase64ToImage(after);
-            temp2 = createTempImageFile(img2);
-            var imageResource2 = new PathResource(temp2.getAbsolutePath());
+            var afterImg = ImageUtil.decodeBase64ToImage(after);
+            afterTmp = createTempImageFile(afterImg);
+            var afterResource = new PathResource(afterTmp.getAbsolutePath());
 
             var systemMessage = new SystemMessage("""
                         You are a security expert. You are looking at two images, "before" and "after".
@@ -66,18 +66,20 @@ public class OpenAIVisionService {
                         Be concise in your descriptions.
                         Each difference you notice between the "before" and "after" images should be formatted on its own line, and begin each line with three asterisks, '***'.
                     """);
-            var userMessage = new UserMessage("Compare these two images, \"before\" and \"after\", closely. What, if anything, is different between these two images? Just describe the image.", new Media(MimeTypeUtils.IMAGE_PNG, imageResource1), new Media(MimeTypeUtils.IMAGE_PNG, imageResource2));
+
+            var userMessage = new UserMessage("Compare these two images, \"before\" and \"after\", closely. What, if anything, is different between these two images? Just describe the image.",
+                    new Media(MimeTypeUtils.IMAGE_PNG, beforeResource), new Media(MimeTypeUtils.IMAGE_PNG, afterResource));
 
             var options = chatModel.getDefaultOptions();
             response = chatModel.call(new Prompt(List.of(systemMessage, userMessage), OpenAiChatOptions.builder().withModel(modelName).build()));
             logger.info(response.toString());
 
         } finally {
-            if (temp1 != null) {
-                temp1.delete();
+            if (beforeTmp != null) {
+                beforeTmp.delete();
             }
-            if (temp2 != null) {
-                temp2.delete();
+            if (afterTmp != null) {
+                afterTmp.delete();
             }
         }
 

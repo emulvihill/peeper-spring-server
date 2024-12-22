@@ -62,7 +62,7 @@ public class VideoSnapService {
                 .build();
 
         var savedSnap = videoSnapRepository.save(snap);
-        asyncComparisonService.compareWithPreviousSnap(savedSnap.getId());
+        asyncComparisonService.compareWithPreviousSnap(savedSnap);
         return savedSnap;
     }
 

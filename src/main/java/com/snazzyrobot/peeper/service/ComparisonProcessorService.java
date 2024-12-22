@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Service
 public class ComparisonProcessorService {
@@ -21,7 +22,7 @@ public class ComparisonProcessorService {
         this.comparisonResultRepository = comparisonResultRepository;
     }
 
-    public List<ComparisonResult> processComparisonResponse(VideoSnap before, VideoSnap after, ChatResponse response) {
+    public List<String> processComparisonResponse(VideoSnap before, VideoSnap after, ChatResponse response) {
 
         logger.debug(response.toString());
 
@@ -41,6 +42,9 @@ public class ComparisonProcessorService {
             return comparisonResultRepository.save(comparisonResult);
         }).toList();
 
-        return comparisonResultList;
+        return comparisonResultList.stream()
+                .map(ComparisonResult::getResult)
+                .flatMap(str -> Stream.of(str.split("\\s.\\*\\*\\*\\s.")))
+                .toList();
     }
 }

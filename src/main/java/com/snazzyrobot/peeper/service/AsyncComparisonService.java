@@ -28,20 +28,19 @@ public class AsyncComparisonService {
     @Async("comparisonTaskExecutor")
     @Transactional
     @Timed
-    public void compareWithPreviousSnap(Long currentSnapId) {
+    public void compareWithPreviousSnap(VideoSnap currentSnap) {
         try {
-            VideoSnap prevSnap = videoSnapRepository.findTopByIdOrderByDateDesc(currentSnapId)
-                    .orElse(null);
+            VideoSnap prevSnap = videoSnapRepository.findFirstByIdLessThanAndFeedOrderByIdDesc(currentSnap.getId(), currentSnap.getFeed());
 
             if (prevSnap != null) {
-                SnapComparison comparison = comparisonService.compareVideoSnapsById(prevSnap.getId(), currentSnapId);
+                SnapComparison comparison = comparisonService.compareVideoSnapsById(prevSnap.getId(), currentSnap.getId());
                 logger.info("Comparison completed for snap ID: {} with previous snap ID: {}, Comparison: {}",
-                        currentSnapId, prevSnap.getId(), comparison.getComparison());
+                        currentSnap.getId(), prevSnap.getId(), comparison.getComparison());
             } else {
-                logger.info("No previous snap found for comparison with ID: {}", currentSnapId);
+                logger.info("No previous snap found for comparison with ID: {}", currentSnap.getId());
             }
         } catch (IOException e) {
-            logger.error("Error comparing video snaps. Current ID: {}", currentSnapId, e);
+            logger.error("Error comparing video snaps. Current ID: {}", currentSnap.getId(), e);
         }
     }
 }

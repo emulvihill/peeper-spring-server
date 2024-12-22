@@ -14,5 +14,5 @@ public interface VideoSnapRepository extends JpaRepository<VideoSnap, Long> {
 
     Optional<VideoSnap> findTopByOrderByDateDesc();
 
-    Optional<VideoSnap> findTopByIdOrderByDateDesc(Long id);
+    VideoSnap findFirstByIdLessThanAndFeedOrderByIdDesc(Long id, Feed feed);
 }
