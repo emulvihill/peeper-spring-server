@@ -4,7 +4,7 @@ CREATE TABLE comparison_result
     response_id     VARCHAR(255)          NOT NULL,
     before_id       BIGINT                NOT NULL,
     after_id        BIGINT                NOT NULL,
-    date            datetime              NOT NULL,
+    date            DATETIME              NOT NULL,
     result          TEXT                  NOT NULL,
     result_detected BIT(1)                NOT NULL,
     CONSTRAINT pk_comparison_result PRIMARY KEY (id)

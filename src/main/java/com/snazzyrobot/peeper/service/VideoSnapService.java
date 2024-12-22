@@ -1,7 +1,7 @@
 package com.snazzyrobot.peeper.service;
 
-import com.snazzyrobot.peeper.dto.VideoUpdate;
 import com.snazzyrobot.peeper.entity.Feed;
+import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
 import com.snazzyrobot.peeper.exception.ResourceNotFoundException;
@@ -25,11 +25,16 @@ public class VideoSnapService {
     private final VideoSnapRepository videoSnapRepository;
     private final FeedRepository feedRepository;
     private final ComparisonService comparisonService;
+    private final AsyncComparisonService asyncComparisonService;
 
-    public VideoSnapService(VideoSnapRepository videoSnapRepository, FeedRepository feedRepository, ComparisonService comparisonService) {
+    public VideoSnapService(VideoSnapRepository videoSnapRepository,
+                            FeedRepository feedRepository,
+                            ComparisonService comparisonService,
+                            AsyncComparisonService asyncComparisonService) {
         this.videoSnapRepository = videoSnapRepository;
         this.feedRepository = feedRepository;
         this.comparisonService = comparisonService;
+        this.asyncComparisonService = asyncComparisonService;
     }
 
     public List<VideoSnap> list() {
@@ -55,10 +60,13 @@ public class VideoSnapService {
                 .data(input.getData())
                 .feed(feed)
                 .build();
-        return videoSnapRepository.save(snap);
+
+        var savedSnap = videoSnapRepository.save(snap);
+        asyncComparisonService.compareWithPreviousSnap(savedSnap.getId());
+        return savedSnap;
     }
 
-    public VideoUpdate createAndCompareVideoSnap(@NotNull VideoSnapInput input) throws IOException {
+    public SnapComparison createAndCompareVideoSnap(@NotNull VideoSnapInput input) throws IOException {
         validateInput(input);
 
         final OffsetDateTime date = OffsetDateTime.now();
@@ -73,7 +81,7 @@ public class VideoSnapService {
         if (prevSnap != null) {
             return comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId());
         } else {
-            return new VideoUpdate(persistedSnap, null, List.of("Previous image is not available for comparison."));
+            return SnapComparison.builder().current(persistedSnap).previous(null).comparison(List.of("Previous image is not available for comparison.")).build();
         }
     }
 

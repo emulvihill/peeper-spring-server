@@ -1,4 +1,8 @@
 spring:
+  boot:
+    admin:
+      client:
+        url: http://localhost:5000
   web:
     resources:
       static-locations: file:static-content, classpath:/META-INF/resources/, classpath:/resources/, classpath:/static/, classpath:/public/
@@ -41,3 +45,18 @@ server:
 
 peeper:
   comparison-service-provider: "openai"
+
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"  # Exposes all endpoints
+      base-path: /actuator  # Optional: defines the base path for actuator endpoints
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true

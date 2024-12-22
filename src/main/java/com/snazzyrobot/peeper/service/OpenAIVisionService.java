@@ -32,7 +32,7 @@ public class OpenAIVisionService {
     private final String modelName;
     private final OpenAiChatModel chatModel;
 
-    public OpenAIVisionService(OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o-mini}") String modelName) {
+    public OpenAIVisionService(OpenAiChatModel chatModel, @Value("${OPENAI_MODEL:gpt-4o}") String modelName) {
         this.chatModel = chatModel;
         this.modelName = modelName;
         this.chatClient = ChatClient.create(chatModel);

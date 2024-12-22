@@ -1,5 +1,6 @@
 package com.snazzyrobot.peeper.configuration;
 
+import com.snazzyrobot.peeper.repository.SnapComparisonRepository;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
 import com.snazzyrobot.peeper.service.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,13 +16,19 @@ public class ServiceConfiguration {
 
     private final ComparisonProcessorService comparisonProcessorService;
     private final VideoSnapRepository videoSnapRepository;
+    private final SnapComparisonRepository comparisonRepository;
     private final OpenAIVisionService openAIVisionService;
     private final OllamaVisionService ollamaVisionService;
 
     // Constructor to inject dependencies manually
-    public ServiceConfiguration(ComparisonProcessorService comparisonProcessorService, VideoSnapRepository videoSnapRepository, OpenAIVisionService openAIVisionService, OllamaVisionService ollamaVisionService) {
+    public ServiceConfiguration(ComparisonProcessorService comparisonProcessorService,
+                                VideoSnapRepository videoSnapRepository,
+                                SnapComparisonRepository comparisonRepository,
+                                OpenAIVisionService openAIVisionService,
+                                OllamaVisionService ollamaVisionService) {
         this.comparisonProcessorService = comparisonProcessorService;
         this.videoSnapRepository = videoSnapRepository;
+        this.comparisonRepository = comparisonRepository;
         this.openAIVisionService = openAIVisionService;
         this.ollamaVisionService = ollamaVisionService;
     }
@@ -33,9 +40,9 @@ public class ServiceConfiguration {
 
     private ComparisonService createComparisonService(String provider) {
         if (Objects.equals(provider, "openai")) {
-            return new OpenAIComparisonService(comparisonProcessorService, videoSnapRepository, openAIVisionService);
+            return new OpenAIComparisonService(comparisonProcessorService, videoSnapRepository, comparisonRepository, openAIVisionService);
         } else if (Objects.equals(provider, "ollama")) {
-            return new OllamaComparisonService(comparisonProcessorService, videoSnapRepository, ollamaVisionService);
+            return new OllamaComparisonService(comparisonProcessorService, videoSnapRepository, comparisonRepository, ollamaVisionService);
         }
 
         throw new IllegalArgumentException("Invalid comparison provider: " + provider);

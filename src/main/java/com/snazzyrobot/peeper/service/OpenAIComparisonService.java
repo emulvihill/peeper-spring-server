@@ -1,8 +1,9 @@
 package com.snazzyrobot.peeper.service;
 
-import com.snazzyrobot.peeper.dto.VideoUpdate;
 import com.snazzyrobot.peeper.entity.ComparisonResult;
+import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
+import com.snazzyrobot.peeper.repository.SnapComparisonRepository;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
 import com.snazzyrobot.peeper.utility.PatternUtil;
 import org.slf4j.Logger;
@@ -20,16 +21,21 @@ public class OpenAIComparisonService implements ComparisonService {
     private static final String VIDEO_SNAP_NOT_FOUND = "VideoSnap with id %d not found";
 
     private final VideoSnapRepository videoSnapRepository;
+    private final SnapComparisonRepository snapComparisonRepository;
     private final OpenAIVisionService openAIService;
     private final ComparisonProcessorService comparisonProcessorService;
 
-    public OpenAIComparisonService(ComparisonProcessorService comparisonProcessorService, VideoSnapRepository videoSnapRepository, OpenAIVisionService openAIVisionService) {
+    public OpenAIComparisonService(ComparisonProcessorService comparisonProcessorService,
+                                   VideoSnapRepository videoSnapRepository,
+                                   SnapComparisonRepository snapComparisonRepository,
+                                   OpenAIVisionService openAIVisionService) {
         this.comparisonProcessorService = comparisonProcessorService;
         this.videoSnapRepository = videoSnapRepository;
+        this.snapComparisonRepository = snapComparisonRepository;
         this.openAIService = openAIVisionService;
     }
 
-    public VideoUpdate compareVideoSnapsById(Long id1, Long id2) throws IOException {
+    public SnapComparison compareVideoSnapsById(Long id1, Long id2) throws IOException {
         logger.info("compareVideoSnapsById, id {} to id {}", id1, id2);
 
         VideoSnap snap1 = videoSnapRepository.findById(id1).orElseThrow(() -> new IllegalArgumentException(String.format(VIDEO_SNAP_NOT_FOUND, id1)));
@@ -44,8 +50,11 @@ public class OpenAIComparisonService implements ComparisonService {
         var processedResponse = comparisonProcessorService.processComparisonResponse(before, after, response);
 
         processedResponse.forEach(r -> logger.info(r.toString()));
-        List<String> responses = processedResponse.stream().map(ComparisonResult::getResult).toList();
+        List<String> comparison = processedResponse.stream().map(ComparisonResult::getResult).toList();
 
-        return new VideoUpdate(after, before, responses);
+        var update = SnapComparison.builder().current(after).previous(before).comparison(comparison).build();
+        snapComparisonRepository.save(update);
+
+        return update;
     }
 }

@@ -1,6 +1,6 @@
 package com.snazzyrobot.peeper.controller;
 
-import com.snazzyrobot.peeper.dto.VideoUpdate;
+import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.service.ComparisonService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class ComparisonController {
     }
 
     @QueryMapping
-    public VideoUpdate compareVideoSnapsById(@Argument Long id1, @Argument Long id2) throws IOException {
+    public SnapComparison compareVideoSnapsById(@Argument Long id1, @Argument Long id2) throws IOException {
         logger.info("Comparing video snaps with IDs: {} and {}", id1, id2);
 
         return comparisonService.compareVideoSnapsById(id1, id2);

@@ -1,6 +1,6 @@
 package com.snazzyrobot.peeper.controller;
 
-import com.snazzyrobot.peeper.dto.VideoUpdate;
+import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
 import com.snazzyrobot.peeper.service.VideoSnapService;
@@ -47,7 +47,7 @@ public class VideoSnapController {
     }
 
     @MutationMapping
-    public VideoUpdate createAndCompareVideoSnap(@Argument VideoSnapInput input) throws IOException {
+    public SnapComparison createAndCompareVideoSnap(@Argument VideoSnapInput input) throws IOException {
         logger.info("Creating new video snap");
         return videoSnapService.createAndCompareVideoSnap(input);
     }

@@ -1,8 +1,9 @@
 package com.snazzyrobot.peeper.service;
 
-import com.snazzyrobot.peeper.dto.VideoUpdate;
 import com.snazzyrobot.peeper.entity.ComparisonResult;
+import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
+import com.snazzyrobot.peeper.repository.SnapComparisonRepository;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
 import com.snazzyrobot.peeper.utility.PatternUtil;
 import org.slf4j.Logger;
@@ -21,28 +22,36 @@ public class OllamaComparisonService implements ComparisonService {
     private static final String VIDEO_SNAP_NOT_FOUND = "VideoSnap with id %d not found";
 
     private final ComparisonProcessorService comparisonProcessorService;
+    private final SnapComparisonRepository snapComparisonRepository;
     private final VideoSnapRepository videoSnapRepository;
     private final OllamaVisionService ollamaVisionService;
 
-    public OllamaComparisonService(ComparisonProcessorService comparisonProcessorService, VideoSnapRepository videoSnapRepository, OllamaVisionService ollamaVisionService) {
+    public OllamaComparisonService(ComparisonProcessorService comparisonProcessorService,
+                                   VideoSnapRepository videoSnapRepository,
+                                   SnapComparisonRepository snapComparisonRepository,
+                                   OllamaVisionService ollamaVisionService) {
         this.comparisonProcessorService = comparisonProcessorService;
+        this.snapComparisonRepository = snapComparisonRepository;
         this.videoSnapRepository = videoSnapRepository;
         this.ollamaVisionService = ollamaVisionService;
     }
 
-    public VideoUpdate compareVideoSnapsById(Long id1, Long id2) throws IOException {
+    public SnapComparison compareVideoSnapsById(Long id1, Long id2) throws IOException {
         logger.info("compareVideoSnapsById, id {} to id {}", id1, id2);
         var snapSequence = getOrderedSnapSequence(id1, id2);
-        ChatResponse comparison = ollamaVisionService.compareImages(
+        ChatResponse chatResponse = ollamaVisionService.compareImages(
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.earlier.getData()),
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.later.getData()));
 
-        var processedResponse = comparisonProcessorService.processComparisonResponse(snapSequence.earlier, snapSequence.later, comparison);
+        var processedResponse = comparisonProcessorService.processComparisonResponse(snapSequence.earlier, snapSequence.later, chatResponse);
 
         processedResponse.forEach(r -> logger.info(r.toString()));
-        List<String> responses = processedResponse.stream().map(ComparisonResult::getResult).toList();
+        List<String> comparison = processedResponse.stream().map(ComparisonResult::getResult).toList();
 
-        return new VideoUpdate(snapSequence.later, snapSequence.earlier, responses);
+        var update = SnapComparison.builder().current(snapSequence.later).previous(snapSequence.earlier).comparison(comparison).build();
+        snapComparisonRepository.save(update);
+
+        return update;
     }
 
     private SnapSequence getOrderedSnapSequence(Long id1, Long id2) {
