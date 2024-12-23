@@ -33,6 +33,7 @@ spring:
           model: llama3.2:latest
           xxx-model: llama3.2-vision:latest
           temperature: 0.0
+          format: "{  \"$schema\": \"http://json-schema.org/draft-04/schema#\",  \"type\": \"object\",  \"properties\": {    \"numPersons\": {      \"type\": \"integer\"    },    \"comparisons\": {      \"type\": \"array\",      \"items\": {        \"type\": \"string\"      }    }  },  \"required\": [    \"numPersons\",    \"comparisons\"]}"
     openai:
         api-key: (set_env_variable)
         base-url: https://api.openai.com

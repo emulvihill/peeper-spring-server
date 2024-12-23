@@ -8,7 +8,6 @@ import com.snazzyrobot.peeper.repository.VideoSnapRepository;
 import com.snazzyrobot.peeper.utility.PatternUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -43,14 +42,14 @@ public class ComparisonServiceImpl implements ComparisonService {
 
         logger.info("compareVideoSnapsById, id {} to id {}", id1, id2);
         var snapSequence = getOrderedSnapSequence(id1, id2);
-        ChatResponse chatResponse = visionService.compareImages(
+        List<String> chatResponse = visionService.compareImages(
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.before.getData()),
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.after.getData()));
 
-        var comparisons = getResultListStream(chatResponse)
+        var comparisons = chatResponse.stream()
                 .flatMap(ComparisonServiceImpl::findValidComparisons).toList();
 
-        var rawComparison = getResultListStream(chatResponse)
+        var rawComparison = chatResponse.stream()
                 .collect(Collectors.joining("&&&"));
 
         var snapComparison = SnapComparison.builder()
@@ -67,10 +66,6 @@ public class ComparisonServiceImpl implements ComparisonService {
     @Override
     public List<SnapComparison> findAllForFeed(long feedId) {
         return snapComparisonRepository.findAllByFeed(feedRepository.findById(feedId));
-    }
-
-    private static Stream<String> getResultListStream(ChatResponse chatResponse) {
-        return chatResponse.getResults().stream().map(result -> result.getOutput().getContent());
     }
 
     private SnapSequence getOrderedSnapSequence(Long id1, Long id2) {

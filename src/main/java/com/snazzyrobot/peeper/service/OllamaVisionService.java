@@ -1,81 +1,92 @@
 package com.snazzyrobot.peeper.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snazzyrobot.peeper.utility.ImageUtil;
-import lib.ASCII;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.model.Media;
 import org.springframework.ai.ollama.OllamaChatModel;
-import org.springframework.ai.ollama.api.OllamaApi;
-import org.springframework.ai.ollama.api.OllamaApi.ChatRequest;
-import org.springframework.ai.ollama.api.OllamaApi.Message;
-import org.springframework.ai.ollama.api.OllamaApi.Message.Role;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.PathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeTypeUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
-public class OllamaVisionService implements VisionService {
+public class OllamaVisionService extends VisionService {
 
     private static final Logger logger = LoggerFactory.getLogger(OllamaVisionService.class);
 
     private final String modelName;
-    private final OllamaApi ollamaApi;
     private final OllamaChatModel chatModel;
 
-    public OllamaVisionService(OllamaApi ollamaApi, OllamaChatModel chatModel, @Value("${OLLAMA_MODEL:llama3.2:latest}") String modelName) {
-        this.ollamaApi = ollamaApi;
+    public OllamaVisionService(OllamaChatModel chatModel, @Value("${OLLAMA_MODEL:llama3.2:latest}") String modelName) {
         this.chatModel = chatModel;
         this.modelName = modelName;
     }
 
     @Override
-    public ChatResponse compareImages(String before, String after) {
+    public List<String> compareImages(String before, String after) throws IOException {
 
-        displayImagesInConsole(before, after);
+        File beforeTmp = null, afterTmp = null;
+        ChatResponse response;
 
-        var request = ChatRequest.builder(modelName).withStream(false) // not streaming
-                .withMessages(List.of(Message.builder(Role.SYSTEM).withContent("""
-                        You are a security expert. You are looking at two images, "before" and "after".
-                        
-                        You are looking for the following list of things:
-                        1. people entering or exiting the image.
-                        2. Items appearing or disappearing from the image.
-                        3. A person changing what they are holding, picking up or putting down objects.
-                        4. A person changing the activity they are performing.
-                        
-                        When comparing images, do not worry about contrast or image orientation.
-                        Be concise in your descriptions.
-                        Each difference you notice between the "before" and "after" images should be formatted on its own line, and begin each line with three asterisks, '***'
-                        """).build(), Message.builder(Role.USER)
-                        .withContent("""
-                                Compare these two images, "before" and "after", closely. What, if anything, is different between these two images?
-                                """)
-                        .withImages(List.of(before, after)).build()))
-                .build();
-
-        var response = ollamaApi.chat(request);
-
-        // TODO Make this work!!!
-        return ChatResponse.builder().build();
-    }
-
-    private void displayImagesInConsole(String before, String after) {
-        ASCII ascii = new ASCII(false, 2, 3);
         try {
-            var img1 = ImageUtil.decodeBase64ToImage(before);
-            var img2 = ImageUtil.decodeBase64ToImage(after);
-            logger.info(ascii.convert(img1));
-            logger.info(ascii.convert(img2));
-        } catch (IOException e) {
-            logger.info("Could not display images as ASCII");
+            var beforeImg = ImageUtil.decodeBase64ToImage(before);
+            beforeTmp = createTempImageFile(beforeImg);
+            var beforeResource = new PathResource(beforeTmp.getAbsolutePath());
+
+            var afterImg = ImageUtil.decodeBase64ToImage(after);
+            afterTmp = createTempImageFile(afterImg);
+            var afterResource = new PathResource(afterTmp.getAbsolutePath());
+
+            SystemMessage systemMessage = new SystemMessage("""
+                    You are a security expert. You are looking at two images, "before" and "after".
+                    """);
+
+            UserMessage userMessage = new UserMessage("""                        
+                    You are looking for the following list of comparisons:
+                    1. people entering or exiting the image.
+                    2. Items appearing or disappearing from the image.
+                    3. A person changing what they are holding, picking up or putting down objects.
+                    4. A person changing the activity they are performing.
+                    
+                    Also count the number of persons (numPersons) which appear in the "after" image.
+                    
+                    When comparing images, do not worry about contrast or image orientation.
+                    Be concise in your descriptions.
+                    """, new Media(MimeTypeUtils.IMAGE_PNG, beforeResource), new Media(MimeTypeUtils.IMAGE_PNG, afterResource));
+
+            Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
+                    OllamaOptions.builder()
+                            .model(modelName)
+                            .format(new ObjectMapper().readValue(jsonSchema, Map.class))
+                            .build());
+
+            response = chatModel.call(prompt);
+
+        } finally {
+            if (beforeTmp != null) {
+                beforeTmp.delete();
+            }
+            if (afterTmp != null) {
+                afterTmp.delete();
+            }
         }
+
+        return response.getResults().stream().map(result -> result.getOutput().getContent()).toList();
     }
 
-    public String compareImagesUsingCombining(String before, String after) throws IOException {
+/*    public String compareImagesUsingCombining(String before, String after) throws IOException {
 
         var img1 = ImageUtil.decodeBase64ToImage(before);
         var img2 = ImageUtil.decodeBase64ToImage(after);
@@ -107,5 +118,6 @@ public class OllamaVisionService implements VisionService {
         var response = ollamaApi.chat(request);
 
         return response.toString();
-    }
+    }*/
+
 }

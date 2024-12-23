@@ -8,6 +8,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatModel;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -34,10 +35,10 @@ class OpenAIVisionServiceTest {
         OpenAIVisionService service = new OpenAIVisionService(mockChatModel, modelName);
 
         // Execute method under test
-        ChatResponse result = service.compareImages(Base64Samples.base64Star, Base64Samples.base64Star);
+        var result = service.compareImages(Base64Samples.base64Star, Base64Samples.base64Star);
 
         // Assertions
-        assertEquals("Comparison result", result.toString());
+        assertEquals(List.of(), result);
 
         // Verify interactions
         verify(mockChatModel, times(1)).call(any(Prompt.class));
