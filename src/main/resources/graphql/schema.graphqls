@@ -6,9 +6,11 @@ type VideoSnap {
 }
 
 type SnapComparison {
+    id: ID!
     current: VideoSnap!,
     previous: VideoSnap,
     comparison: [String]!
+    feed: Feed!
 }
 
 input VideoSnapInput {
@@ -31,6 +33,7 @@ input FeedInput {
 type Query {
     compareVideoSnapsById(id1: ID!, id2: ID!): SnapComparison!
     videoSnapsForFeed(feedId: ID!): [VideoSnap]!
+    comparisonsForFeed(feedId: ID!): [SnapComparison]!
     videoSnaps: [VideoSnap]!
     videoSnap(id: ID!): VideoSnap
     feeds: [Feed]!

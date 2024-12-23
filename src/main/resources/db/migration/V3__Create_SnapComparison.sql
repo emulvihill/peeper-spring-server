@@ -5,6 +5,7 @@ CREATE TABLE snap_comparison
     modified        TIMESTAMP             NOT NULL DEFAULT CURRENT_TIMESTAMP,
     current_id      BIGINT                NULL,
     previous_id     BIGINT                NULL,
+    feed_id         BIGINT                NOT NULL,
     raw_comparison  TEXT                  NOT NULL,
     result_detected BIT(1)                NOT NULL,
     CONSTRAINT pk_snap_comparison PRIMARY KEY (id)

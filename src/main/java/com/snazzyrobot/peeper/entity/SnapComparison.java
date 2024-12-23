@@ -17,7 +17,7 @@ import java.util.List;
 @Entity
 @Table(name = "snap_comparison")
 @EntityListeners(AuditingEntityListener.class)
-public class SnapComparison implements EntityDetails {
+public class SnapComparison extends BaseEntity implements EntityDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +32,10 @@ public class SnapComparison implements EntityDetails {
     @LastModifiedDate
     @ToString.Exclude
     private OffsetDateTime modified;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "feed_id", referencedColumnName = "id")
+    private Feed feed;
 
     @OneToOne
     private VideoSnap current;

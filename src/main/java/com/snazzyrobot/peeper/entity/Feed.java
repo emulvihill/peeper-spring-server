@@ -16,7 +16,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class Feed implements EntityDetails {
+public class Feed extends BaseEntity implements EntityDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

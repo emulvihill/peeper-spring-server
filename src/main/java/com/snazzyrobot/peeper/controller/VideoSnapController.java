@@ -3,10 +3,10 @@ package com.snazzyrobot.peeper.controller;
 import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.entity.VideoSnapInput;
+import com.snazzyrobot.peeper.service.ComparisonService;
 import com.snazzyrobot.peeper.service.VideoSnapService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
@@ -21,9 +21,11 @@ public class VideoSnapController {
     private static final Logger logger = LoggerFactory.getLogger(VideoSnapController.class);
 
     private final VideoSnapService videoSnapService;
+    private final ComparisonService comparisonService;
 
-    public VideoSnapController(@Autowired VideoSnapService videoSnapService) {
+    public VideoSnapController(VideoSnapService videoSnapService, ComparisonService comparisonService) {
         this.videoSnapService = videoSnapService;
+        this.comparisonService = comparisonService;
     }
 
     @QueryMapping
@@ -39,6 +41,11 @@ public class VideoSnapController {
     @QueryMapping
     public List<VideoSnap> videoSnapsForFeed(@Argument String feedId) {
         return videoSnapService.findAllForFeed(Long.parseLong(feedId));
+    }
+
+    @QueryMapping
+    public List<SnapComparison> comparisonsForFeed(@Argument String feedId) {
+        return comparisonService.findAllForFeed(Long.parseLong(feedId));
     }
 
     @MutationMapping

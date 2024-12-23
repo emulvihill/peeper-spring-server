@@ -16,7 +16,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class VideoSnap implements EntityDetails {
+public class VideoSnap extends BaseEntity implements EntityDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -38,4 +38,5 @@ public class VideoSnap implements EntityDetails {
 
     @Column(nullable = false)
     private String data;
+
 }
