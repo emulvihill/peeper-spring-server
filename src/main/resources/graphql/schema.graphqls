@@ -1,12 +1,15 @@
 type VideoSnap {
     id: ID!
     feed: Feed!
-    date: String!
+    created: String!
+    modified: String!
     data: String!
 }
 
 type SnapComparison {
     id: ID!
+    created: String!
+    modified: String!
     current: VideoSnap!,
     previous: VideoSnap,
     numPersons: Int!
@@ -21,6 +24,8 @@ input VideoSnapInput {
 
 type Feed {
     id: ID!
+    created: String!
+    modified: String!
     userId: Int!
     name: String!
 }

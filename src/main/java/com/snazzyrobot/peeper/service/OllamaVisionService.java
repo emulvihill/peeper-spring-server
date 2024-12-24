@@ -1,5 +1,6 @@
 package com.snazzyrobot.peeper.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snazzyrobot.peeper.dto.ComparisonFormat;
 import com.snazzyrobot.peeper.utility.ImageUtil;
 import org.slf4j.Logger;
@@ -70,14 +71,14 @@ public class OllamaVisionService extends VisionService {
                     When comparing images, do not worry about contrast or image orientation.
                     Be concise in your descriptions.
                     """,
-                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(afterResource).name("after").build(),
-                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(beforeResource).name("before").build()
-            );
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(beforeResource).name("before").build(),
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(afterResource).name("after").build()
+                    );
 
             Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
                     OllamaOptions.builder()
                             .model(modelName)
-                            .format(format)
+                            .format(new ObjectMapper().readValue(jsonSchema, Map.class))
                             .build());
 
             response = chatModel.call(prompt);
