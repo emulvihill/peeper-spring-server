@@ -46,10 +46,13 @@ public class SnapComparison extends BaseEntity implements EntityDetails {
     @ElementCollection
     @CollectionTable(name = "snap_comparison_detections")
     @Column(name = "detection")
-    private List<String> comparison;
+    private List<String> comparisons;
 
     @Column(nullable = false)
     String rawComparison;
+
+    @Column(nullable = false)
+    Integer numPersons;
 
     @Column(nullable = false)
     private boolean resultDetected;

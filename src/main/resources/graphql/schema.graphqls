@@ -9,7 +9,8 @@ type SnapComparison {
     id: ID!
     current: VideoSnap!,
     previous: VideoSnap,
-    comparison: [String]!
+    numPersons: Int!
+    comparisons: [String]!
     feed: Feed!
 }
 

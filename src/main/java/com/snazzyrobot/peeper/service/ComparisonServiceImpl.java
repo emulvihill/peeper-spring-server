@@ -1,5 +1,6 @@
 package com.snazzyrobot.peeper.service;
 
+import com.snazzyrobot.peeper.dto.ComparisonFormat;
 import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
 import com.snazzyrobot.peeper.repository.FeedRepository;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 import java.util.stream.Stream;
 
 @Service
@@ -42,23 +43,22 @@ public class ComparisonServiceImpl implements ComparisonService {
 
         logger.info("compareVideoSnapsById, id {} to id {}", id1, id2);
         var snapSequence = getOrderedSnapSequence(id1, id2);
-        List<String> chatResponse = visionService.compareImages(
+        Map.Entry<String, ComparisonFormat> resultEntry = visionService.compareImages(
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.before.getData()),
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.after.getData()));
 
-        var comparisons = chatResponse.stream()
-                .flatMap(ComparisonServiceImpl::findValidComparisons).toList();
-
-        var rawComparison = chatResponse.stream()
-                .collect(Collectors.joining("&&&"));
+        var rawResult = resultEntry.getKey();
+        var result = resultEntry.getValue();
 
         var snapComparison = SnapComparison.builder()
                 .current(snapSequence.after)
                 .previous(snapSequence.before)
                 .feed(snapSequence.after.getFeed())
-                .resultDetected(!comparisons.isEmpty())
-                .rawComparison(rawComparison)
-                .comparison(comparisons).build();
+                .rawComparison(rawResult)
+                .resultDetected(!result.getComparisons().isEmpty())
+                .comparisons(result.getComparisons())
+                .numPersons(result.getNumPersons())
+                .build();
 
         return snapComparisonRepository.save(snapComparison);
     }

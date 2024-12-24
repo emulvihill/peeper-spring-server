@@ -1,6 +1,6 @@
 package com.snazzyrobot.peeper.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.snazzyrobot.peeper.dto.ComparisonFormat;
 import com.snazzyrobot.peeper.utility.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +8,7 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.model.Media;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
@@ -18,6 +19,7 @@ import org.springframework.util.MimeTypeUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +37,10 @@ public class OllamaVisionService extends VisionService {
     }
 
     @Override
-    public List<String> compareImages(String before, String after) throws IOException {
+    public Map.Entry<String, ComparisonFormat> compareImages(String before, String after) throws IOException {
+
+        var beanOutputConverter = new BeanOutputConverter<>(ComparisonFormat.class);
+        String format = beanOutputConverter.getFormat();
 
         File beforeTmp = null, afterTmp = null;
         ChatResponse response;
@@ -64,12 +69,15 @@ public class OllamaVisionService extends VisionService {
                     
                     When comparing images, do not worry about contrast or image orientation.
                     Be concise in your descriptions.
-                    """, new Media(MimeTypeUtils.IMAGE_PNG, beforeResource), new Media(MimeTypeUtils.IMAGE_PNG, afterResource));
+                    """,
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(afterResource).name("after").build(),
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(beforeResource).name("before").build()
+            );
 
             Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
                     OllamaOptions.builder()
                             .model(modelName)
-                            .format(new ObjectMapper().readValue(jsonSchema, Map.class))
+                            .format(format)
                             .build());
 
             response = chatModel.call(prompt);
@@ -83,41 +91,7 @@ public class OllamaVisionService extends VisionService {
             }
         }
 
-        return response.getResults().stream().map(result -> result.getOutput().getContent()).toList();
+        ComparisonFormat converted = beanOutputConverter.convert(response.getResult().getOutput().getContent());
+        return new AbstractMap.SimpleEntry<>(response.getResult().toString(), converted);
     }
-
-/*    public String compareImagesUsingCombining(String before, String after) throws IOException {
-
-        var img1 = ImageUtil.decodeBase64ToImage(before);
-        var img2 = ImageUtil.decodeBase64ToImage(after);
-        var combined = ImageUtil.combineImagesSideBySide(img1, img2);
-
-        var base64Combined = ImageUtil.encodeImageToBase64(combined);
-
-        var request = ChatRequest.builder(modelName).withStream(false) // not streaming
-                .withMessages(List.of(Message.builder(Role.SYSTEM).withContent("""
-                                You are a security expert. You are looking for anything unusual. \
-                                When comparing images, do not worry about contrast or image orientation.\
-                                Be concise in your descriptions.
-                                Format your response with one difference per line, and begin each line with three amersands, '&&&'""").build(),
-                        Message.builder(Role.USER).withContent("The image contains two separate images, on the left and on the right. Compare these two images closely. What, if anything, is different between these two images?")
-                                .withImages(List.of(base64Combined)).build()))
-                .build();
-
-        var response = ollamaApi.chat(request);
-
-        return response.toString();
-    }
-
-    public String describeImage(String base64Image) {
-
-        var request = ChatRequest.builder(modelName).withStream(false) // not streaming
-                .withMessages(List.of(Message.builder(Role.SYSTEM).withContent("You are a security monitor. You are looking for anything unusual.").build(), Message.builder(Role.USER)
-                        .withContent("What is in this image?").withImages(List.of(base64Image)).build())).withOptions(OllamaOptions.create().withTemperature(0.9)).build();
-
-        var response = ollamaApi.chat(request);
-
-        return response.toString();
-    }*/
-
 }

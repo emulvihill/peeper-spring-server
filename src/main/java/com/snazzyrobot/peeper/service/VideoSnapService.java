@@ -80,7 +80,7 @@ public class VideoSnapService {
         if (prevSnap != null) {
             return comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId());
         } else {
-            return SnapComparison.builder().current(persistedSnap).previous(null).comparison(List.of("Previous image is not available for comparison.")).build();
+            return SnapComparison.builder().current(persistedSnap).previous(null).comparisons(List.of("Previous image is not available for comparison.")).build();
         }
     }
 

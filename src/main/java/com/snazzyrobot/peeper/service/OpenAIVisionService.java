@@ -2,6 +2,7 @@ package com.snazzyrobot.peeper.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.snazzyrobot.peeper.dto.ComparisonFormat;
 import com.snazzyrobot.peeper.utility.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.ai.model.Media;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.openai.OpenAiChatModel;
@@ -22,6 +24,7 @@ import org.springframework.util.MimeTypeUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +41,9 @@ public class OpenAIVisionService extends VisionService {
         this.modelName = modelName;
     }
 
-    public List<String> compareImages(String before, String after) throws IllegalArgumentException, IOException {
+    public Map.Entry<String, ComparisonFormat> compareImages(String before, String after) throws IllegalArgumentException, IOException {
+
+        var beanOutputConverter = new BeanOutputConverter<>(ComparisonFormat.class);
 
         File beforeTmp = null, afterTmp = null;
         ChatResponse response;
@@ -67,7 +72,12 @@ public class OpenAIVisionService extends VisionService {
                     
                     When comparing images, do not worry about contrast or image orientation.
                     Be concise in your descriptions.
-                    """, new Media(MimeTypeUtils.IMAGE_PNG, beforeResource), new Media(MimeTypeUtils.IMAGE_PNG, afterResource));
+                    """,
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(afterResource).name("after").build(),
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(beforeResource).name("before").build()
+            );
+
+            logger.info(beanOutputConverter.getFormat());
 
             Prompt prompt = new Prompt(List.of(systemMessage, userMessage),
                     OpenAiChatOptions.builder()
@@ -86,7 +96,8 @@ public class OpenAIVisionService extends VisionService {
             }
         }
 
-        return response.getResults().stream().map(result -> result.getOutput().getContent()).toList();
+        ComparisonFormat converted = beanOutputConverter.convert(response.getResult().getOutput().getContent());
+        return new AbstractMap.SimpleEntry<>(response.getResult().toString(), converted);
     }
 
     private ChatOptions getChatOptions() throws JsonProcessingException {
