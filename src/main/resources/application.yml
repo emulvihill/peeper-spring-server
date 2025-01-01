@@ -17,7 +17,7 @@ spring:
       enabled: true
     cors:
       allow-credentials: true
-      allowed-origins: http://localhost:3000,http://localhost:4200
+      allowed-origins: http://localhost:4200
       allowed-methods: GET,POST
   flyway:
     create-schemas: true
@@ -31,7 +31,6 @@ spring:
       chat:
         options:
           model: llama3.2:latest
-          xxx-model: llama3.2-vision:latest
           temperature: 0.0
           format: "{  \"$schema\": \"http://json-schema.org/draft-04/schema#\",  \"type\": \"object\",  \"properties\": {    \"numPersons\": {      \"type\": \"integer\"    },    \"comparisons\": {      \"type\": \"array\",      \"items\": {        \"type\": \"string\"      }    }  },  \"required\": [    \"numPersons\",    \"comparisons\"]}"
     openai:
