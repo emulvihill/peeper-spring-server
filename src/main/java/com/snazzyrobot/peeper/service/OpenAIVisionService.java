@@ -96,7 +96,7 @@ public class OpenAIVisionService extends VisionService {
             }
         }
 
-        ComparisonFormat converted = beanOutputConverter.convert(response.getResult().getOutput().getContent());
+        ComparisonFormat converted = beanOutputConverter.convert(response.getResult().getOutput().getText());
         return new AbstractMap.SimpleEntry<>(response.getResult().toString(), converted);
     }
 

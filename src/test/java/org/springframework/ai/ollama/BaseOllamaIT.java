@@ -92,8 +92,6 @@ public abstract class BaseOllamaIT {
 
 	private static void ensureModelIsPresent(final OllamaApi ollamaApi, final String model) {
 		final var modelManagementOptions = ModelManagementOptions.builder()
-			.withMaxRetries(DEFAULT_MAX_RETRIES)
-			.withTimeout(DEFAULT_TIMEOUT)
 			.build();
 		final var ollamaModelManager = new OllamaModelManager(ollamaApi, modelManagementOptions);
 		ollamaModelManager.pullModel(model, PullModelStrategy.WHEN_MISSING);

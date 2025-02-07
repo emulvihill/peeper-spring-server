@@ -42,121 +42,121 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 class OllamaChatModelIT {
 
-	private static final Logger logger = LoggerFactory.getLogger(OllamaChatModelIT.class);
+    private static final Logger logger = LoggerFactory.getLogger(OllamaChatModelIT.class);
 
-	private static final String MODEL = OllamaModel.LLAMA3_2.getName();
+    private static final String MODEL = OllamaModel.LLAMA3_2.getName();
 
-	private static final String ADDITIONAL_MODEL = "tinyllama";
+    private static final String ADDITIONAL_MODEL = "tinyllama";
 
-	@Autowired
-	private OllamaChatModel chatModel;
+    @Autowired
+    private OllamaChatModel chatModel;
 
-	@Autowired
-	private OllamaApi ollamaApi;
+    @Autowired
+    private OllamaApi ollamaApi;
 
-	public static String escape(final CharSequence text) {
+    public static String escape(final CharSequence text) {
 
-		if (text == null) {
-			return "";
-		}
-		final StringWriter writer = new StringWriter();
-		for (int i = 0, length = text.length(); i < length; i++) {
-			final char c = text.charAt(i);
-			switch (c) {
-				case '"':
-					writer.write("\\\"");
-					break;
-				case '\\':
-					writer.write("\\\\");
-					break;
-				default:
-					if (c > 0x1f) {
-						writer.write(c);
-					} else {
-						writer.write("\\u");
-						final String hex = "000" + Integer.toHexString(c);
-						writer.write(hex.substring(hex.length() - 4));
-					}
-			}
-		}
-		return writer.toString();
-	}
+        if (text == null) {
+            return "";
+        }
+        final StringWriter writer = new StringWriter();
+        for (int i = 0, length = text.length(); i < length; i++) {
+            final char c = text.charAt(i);
+            switch (c) {
+                case '"':
+                    writer.write("\\\"");
+                    break;
+                case '\\':
+                    writer.write("\\\\");
+                    break;
+                default:
+                    if (c > 0x1f) {
+                        writer.write(c);
+                    } else {
+                        writer.write("\\u");
+                        final String hex = "000" + Integer.toHexString(c);
+                        writer.write(hex.substring(hex.length() - 4));
+                    }
+            }
+        }
+        return writer.toString();
+    }
 
-	// Example inspired by https://ollama.com/blog/structured-outputs
-	@Test
-	@Disabled("Pending review")
-	void jsonSchemaFormatStructuredOutput() {
-		var outputConverter = new BeanOutputConverter<>(CountryInfo.class);
-		var userPromptTemplate = new PromptTemplate("""
-				Tell me about {country}.
-				""");
-		Map<String, Object> model = Map.of("country", "denmark");
+    // Example inspired by https://ollama.com/blog/structured-outputs
+    @Test
+    @Disabled("Pending review")
+    void jsonSchemaFormatStructuredOutput() {
+        var outputConverter = new BeanOutputConverter<>(CountryInfo.class);
+        var userPromptTemplate = new PromptTemplate("""
+                Tell me about {country}.
+                """);
+        Map<String, Object> model = Map.of("country", "denmark");
 
-		// emitted by outputConverter.getJsonSchema()
-		var theSchemaEmitted = """
-		{
-			"$schema" : "https://json-schema.org/draft/2020-12/schema",
-				"type" : "object",
-				"properties" : {
-			"capital" : {
-				"type" : "string"
-			},
-			"languages" : {
-				"type" : "array",
-						"items" : {
-					"type" : "string"
-				}
-			},
-			"name" : {
-				"type" : "string"
-			}
-		},
-			"required" : [ "capital", "languages", "name" ],
-			"additionalProperties" : false
-	}
-""";
+        // emitted by outputConverter.getJsonSchema()
+        var theSchemaEmitted = """
+                		{
+                			"$schema" : "https://json-schema.org/draft/2020-12/schema",
+                				"type" : "object",
+                				"properties" : {
+                			"capital" : {
+                				"type" : "string"
+                			},
+                			"languages" : {
+                				"type" : "array",
+                						"items" : {
+                					"type" : "string"
+                				}
+                			},
+                			"name" : {
+                				"type" : "string"
+                			}
+                		},
+                			"required" : [ "capital", "languages", "name" ],
+                			"additionalProperties" : false
+                	}
+                """;
 
-		var prompt = userPromptTemplate.create(model,
-				OllamaOptions.builder().withModel(OllamaModel.LLAMA3_2.getName())
-						.withFormat(outputConverter.getJsonSchema())
-						.build());
+        var prompt = userPromptTemplate.create(model,
+                OllamaOptions.builder().model(OllamaModel.LLAMA3_2.getName())
+                        .format(outputConverter.getJsonSchema())
+                        .build());
 
-		logger.info(outputConverter.getJsonSchema());
+        logger.info(outputConverter.getJsonSchema());
 
-		var chatResponse = this.chatModel.call(prompt);
+        var chatResponse = this.chatModel.call(prompt);
 
-		var countryInfo = outputConverter.convert(chatResponse.getResult().getOutput().getContent());
-		assertThat(countryInfo).isNotNull();
-		assertThat(countryInfo.capital()).isEqualToIgnoringCase("Copenhagen");
-	}
+        var countryInfo = outputConverter.convert(chatResponse.getResult().getOutput().getText());
+        assertThat(countryInfo).isNotNull();
+        assertThat(countryInfo.capital()).isEqualToIgnoringCase("Copenhagen");
+    }
 
-	record CountryInfo(@JsonProperty(required = true) String name, @JsonProperty(required = true) String capital,
-					   @JsonProperty(required = true) List<String> languages) {
-	}
+    record CountryInfo(@JsonProperty(required = true) String name, @JsonProperty(required = true) String capital,
+                       @JsonProperty(required = true) List<String> languages) {
+    }
 
 
+    @SpringBootConfiguration
+    public static class TestConfiguration extends BaseOllamaIT {
 
-	@SpringBootConfiguration
-	public static class TestConfiguration extends BaseOllamaIT {
+        @Bean
+        public OllamaApi ollamaApi() {
+            return initializeOllama(MODEL);
+        }
 
-		@Bean
-		public OllamaApi ollamaApi() {
-			return initializeOllama(MODEL);
-		}
+        @Bean
+        public OllamaChatModel ollamaChat(OllamaApi ollamaApi) {
+            return OllamaChatModel.builder()
+                    .ollamaApi(ollamaApi)
+                    .defaultOptions(OllamaOptions.builder().model(MODEL)
+                            .temperature(0.9).build())
+                            .modelManagementOptions(ModelManagementOptions.builder()
+                                .pullModelStrategy(PullModelStrategy.WHEN_MISSING)
+                                .additionalModels(List.of(ADDITIONAL_MODEL))
+                            .build())
+                    .build();
+        }
 
-		@Bean
-		public OllamaChatModel ollamaChat(OllamaApi ollamaApi) {
-			return OllamaChatModel.builder()
-					.withOllamaApi(ollamaApi)
-					.withDefaultOptions(OllamaOptions.builder().withModel(MODEL).withTemperature(0.9).build())
-					.withModelManagementOptions(ModelManagementOptions.builder()
-							.withPullModelStrategy(PullModelStrategy.WHEN_MISSING)
-							.withAdditionalModels(List.of(ADDITIONAL_MODEL))
-							.build())
-					.build();
-		}
-
-	}
+    }
 
 /*
 	@Test
