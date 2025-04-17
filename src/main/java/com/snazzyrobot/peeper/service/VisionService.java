@@ -20,7 +20,7 @@ public abstract class VisionService {
 
     String jsonSchema = """                
                 {
-                  "$schema": "http://json-schema.org/draft-04/schema#",
+                  "$schema" : "https://json-schema.org/draft/2020-12/schema",
                   "type": "object",
                   "properties": {
                     "numPersons": {

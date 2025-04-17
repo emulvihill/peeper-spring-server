@@ -3,7 +3,9 @@ package com.snazzyrobot.peeper.service;
 import com.snazzyrobot.peeper.utility.Base64Samples;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatModel;
 
@@ -28,6 +30,9 @@ class OpenAIVisionServiceTest {
         // Mock dependencies
         OpenAiChatModel mockChatModel = mock(OpenAiChatModel.class);
         ChatResponse mockResponse = mock(ChatResponse.class);
+        Generation mockGeneration = mock(Generation.class);
+        when(mockGeneration.getOutput()).thenReturn(new AssistantMessage("{\"comparisons\": [], \"numPersons\": 1}"));
+        when(mockResponse.getResult()).thenReturn(mockGeneration);
         when(mockResponse.toString()).thenReturn("Comparison result");
         when(mockChatModel.call(any(Prompt.class))).thenReturn(mockResponse);
 
@@ -35,10 +40,13 @@ class OpenAIVisionServiceTest {
         OpenAIVisionService service = new OpenAIVisionService(mockChatModel, modelName);
 
         // Execute method under test
-        var result = service.compareImages(Base64Samples.base64Star, Base64Samples.base64Star);
-
+        var resultEntry = service.compareImages(Base64Samples.base64Star, Base64Samples.base64Star);
+        var rawResult = resultEntry.getKey();
+        var result = resultEntry.getValue();
         // Assertions
-        assertEquals(List.of(), result);
+        assertEquals("Mock", rawResult.substring(0, 4));
+        assertEquals(1, result.getNumPersons());
+        assertEquals(List.of(), result.getComparisons());
 
         // Verify interactions
         verify(mockChatModel, times(1)).call(any(Prompt.class));

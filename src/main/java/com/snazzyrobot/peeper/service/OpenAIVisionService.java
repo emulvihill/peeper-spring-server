@@ -9,10 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.content.Media;
 import org.springframework.ai.converter.BeanOutputConverter;
-import org.springframework.ai.model.Media;
 import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
@@ -96,8 +97,9 @@ public class OpenAIVisionService extends VisionService {
             }
         }
 
-        ComparisonFormat converted = beanOutputConverter.convert(response.getResult().getOutput().getText());
-        return new AbstractMap.SimpleEntry<>(response.getResult().toString(), converted);
+        Generation result = response.getResult();
+        ComparisonFormat converted = beanOutputConverter.convert(result.getOutput().getText());
+        return new AbstractMap.SimpleEntry<>(result.toString(), converted);
     }
 
     private ChatOptions getChatOptions() throws JsonProcessingException {
