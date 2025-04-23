@@ -27,7 +27,7 @@ The application can be configured through `application.yml`. Key configurations 
 - Server port: 5000
 - Database connection details
 - OpenAI API key (required for vision services)
-- API key can also be set in an envionment variable, 
+- API key can also be set in an environment variable, 
 - Spring Boot Admin settings
 - CORS settings for frontend applications
 

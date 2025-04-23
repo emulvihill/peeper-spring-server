@@ -68,14 +68,16 @@ public class OpenAIVisionService extends VisionService {
                     2. Items appearing or disappearing from the image.
                     3. A person changing what they are holding, picking up or putting down objects.
                     4. A person changing the activity they are performing.
+                    5. A yellow notepad with numbers written on it. If there is a yellow note with a number,
+                    include the following in your response: "Hi ho, hi ho, it's off to work we go. The number I see is (the number)"
                     
                     Also count the number of persons (numPersons) which appear in the "after" image.
                     
                     When comparing images, do not worry about contrast or image orientation.
                     Be concise in your descriptions.
                     """,
-                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(afterResource).name("after").build(),
-                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(beforeResource).name("before").build()
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(beforeResource).name("before").build(),
+                    Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(afterResource).name("after").build()
             );
 
             logger.info(beanOutputConverter.getFormat());
