@@ -78,7 +78,7 @@ public class VideoSnapService {
         var persistedSnap = videoSnapRepository.save(latest);
 
         if (prevSnap != null) {
-            return comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId());
+            return comparisonService.compareVideoSnapsById(prevSnap.getId(), persistedSnap.getId(), "default");
         } else {
             return SnapComparison.builder().current(persistedSnap).previous(null).comparisons(List.of("Previous image is not available for comparison.")).build();
         }

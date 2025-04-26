@@ -1,8 +1,10 @@
 package com.snazzyrobot.peeper.service;
 
 import com.snazzyrobot.peeper.dto.ComparisonFormat;
+import com.snazzyrobot.peeper.entity.CompareProfile;
 import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
+import com.snazzyrobot.peeper.repository.CompareProfileRepository;
 import com.snazzyrobot.peeper.repository.FeedRepository;
 import com.snazzyrobot.peeper.repository.SnapComparisonRepository;
 import com.snazzyrobot.peeper.repository.VideoSnapRepository;
@@ -28,20 +30,28 @@ public class ComparisonServiceImpl implements ComparisonService {
     private final SnapComparisonRepository snapComparisonRepository;
     private final VideoSnapRepository videoSnapRepository;
     private final VisionService visionService;
+    private final CompareProfileRepository compareProfileRepository;
 
     public ComparisonServiceImpl(VideoSnapRepository videoSnapRepository,
                                  FeedRepository feedRepository,
                                  SnapComparisonRepository snapComparisonRepository,
-                                 VisionService visionService) {
+                                 VisionService visionService,
+                                 CompareProfileRepository compareProfileRepository) {
         this.feedRepository = feedRepository;
         this.snapComparisonRepository = snapComparisonRepository;
         this.videoSnapRepository = videoSnapRepository;
         this.visionService = visionService;
+        this.compareProfileRepository = compareProfileRepository;
     }
 
-    public SnapComparison compareVideoSnapsById(Long id1, Long id2) throws IOException {
+    public SnapComparison compareVideoSnapsById(Long id1, Long id2, String profile) throws IOException {
 
-        logger.info("compareVideoSnapsById, id {} to id {}", id1, id2);
+        logger.info("compareVideoSnapsById, id {} to id {}, profile {}", id1, id2, profile);
+
+        // Find or create the CompareProfile
+        CompareProfile compareProfile = compareProfileRepository.findByName(profile)
+                .orElseThrow(() -> new IllegalArgumentException("Compare profile '" + profile + "' not found."));
+
         var snapSequence = getOrderedSnapSequence(id1, id2);
         Map.Entry<String, ComparisonFormat> resultEntry = visionService.compareImages(
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.before.getData()),

@@ -24,9 +24,9 @@ public class ComparisonController {
     }
 
     @QueryMapping
-    public SnapComparison compareVideoSnapsById(@Argument Long id1, @Argument Long id2) throws IOException {
-        logger.info("Comparing video snaps with IDs: {} and {}", id1, id2);
+    public SnapComparison compareVideoSnapsById(@Argument Long id1, @Argument Long id2, @Argument String profile) throws IOException {
+        logger.info("Comparing video snaps with IDs: {} and {}, profile: {}", id1, id2, profile);
 
-        return comparisonService.compareVideoSnapsById(id1, id2);
+        return comparisonService.compareVideoSnapsById(id1, id2, profile);
     }
 }

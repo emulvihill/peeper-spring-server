@@ -1,6 +1,7 @@
 package com.snazzyrobot.peeper.service;
 
 import com.snazzyrobot.peeper.dto.ComparisonFormat;
+import com.snazzyrobot.peeper.entity.PointOfInterest;
 import com.snazzyrobot.peeper.utility.ImageUtil;
 import lib.ASCII;
 import org.slf4j.Logger;
@@ -11,10 +12,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Map;
 
 public abstract class VisionService {
     abstract Map.Entry<String, ComparisonFormat> compareImages(String before, String after) throws IOException;
+
+    abstract Map.Entry<String, ComparisonFormat> compareImages(String before, String after, List<PointOfInterest> pointsOfInterest) throws IOException;
 
     private static final Logger logger = LoggerFactory.getLogger(VisionService.class);
 
@@ -31,11 +35,15 @@ public abstract class VisionService {
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "pointOfInterestResponse": {
+                      "type": "string"
                     }
                   },
                   "required": [
                     "numPersons",
-                    "comparisons"
+                    "comparisons",
+                    "pointOfInterestResponse"
                   ],
                   "additionalProperties": false
                 }

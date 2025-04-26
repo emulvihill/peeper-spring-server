@@ -25,6 +25,8 @@ spring:
     default-schema: peeper
     schemas: peeper
     init-sqls: CREATE SCHEMA IF NOT EXISTS peeper;
+  thymeleaf:
+    check-template-location: false
   ai:
     ollama:
       base-url: http://localhost:11434

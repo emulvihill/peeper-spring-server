@@ -33,7 +33,7 @@ public class AsyncComparisonService {
             VideoSnap prevSnap = videoSnapRepository.findFirstByIdLessThanAndFeedOrderByIdDesc(currentSnap.getId(), currentSnap.getFeed());
 
             if (prevSnap != null) {
-                SnapComparison comparison = comparisonService.compareVideoSnapsById(prevSnap.getId(), currentSnap.getId());
+                SnapComparison comparison = comparisonService.compareVideoSnapsById(prevSnap.getId(), currentSnap.getId(), "default");
                 logger.info("Comparison completed for snap ID: {} with previous snap ID: {}, Comparison: {}",
                         currentSnap.getId(), prevSnap.getId(), comparison.getComparisons());
             } else {

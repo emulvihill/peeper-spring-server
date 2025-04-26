@@ -2,6 +2,7 @@ package com.snazzyrobot.peeper.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.snazzyrobot.peeper.dto.ComparisonFormat;
+import com.snazzyrobot.peeper.entity.PointOfInterest;
 import com.snazzyrobot.peeper.utility.ImageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,11 @@ public class OllamaVisionService extends VisionService {
 
     @Override
     public Map.Entry<String, ComparisonFormat> compareImages(String before, String after) throws IOException {
+        return compareImages(before, after, null);
+    }
+
+    @Override
+    public Map.Entry<String, ComparisonFormat> compareImages(String before, String after, List<PointOfInterest> pointsOfInterest) throws IOException {
 
         var beanOutputConverter = new BeanOutputConverter<>(ComparisonFormat.class);
         String format = beanOutputConverter.getFormat();
@@ -59,7 +65,7 @@ public class OllamaVisionService extends VisionService {
                     You are a security expert. You are looking at two images, "before" and "after".
                     """);
 
-            UserMessage userMessage = new UserMessage("""                        
+            StringBuilder userMessageText = new StringBuilder("""                        
                     You are looking for the following list of comparisons:
                     1. people entering or exiting the image.
                     2. Items appearing or disappearing from the image.
@@ -67,12 +73,23 @@ public class OllamaVisionService extends VisionService {
                     4. A person changing the activity they are performing.
                     5. A yellow notepad with numbers written on it. If there is a yellow note with a number,
                     include the following in your response: "Hi ho, hi ho, it's off to work we go. The number I see is (the number)"
-                    
+
                     Also count the number of persons (numPersons) which appear in the "after" image.
-                    
+
                     When comparing images, do not worry about contrast or image orientation.
                     Be concise in your descriptions.
-                    """,
+                    """);
+
+            // Add points of interest if provided
+            if (pointsOfInterest != null) {
+                pointsOfInterest.forEach (poi -> {
+                    userMessageText.append("\n\nAdditionally, check for the following point of interest: ")
+                            .append(poi.getRequest())
+                            .append("\nIf found, include details in the pointOfInterestResponse field.");
+                });
+            }
+
+            UserMessage userMessage = new UserMessage(userMessageText.toString(),
                     Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(beforeResource).name("before").build(),
                     Media.builder().mimeType(MimeTypeUtils.IMAGE_PNG).data(afterResource).name("after").build()
                     );
