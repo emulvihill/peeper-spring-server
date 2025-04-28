@@ -80,7 +80,7 @@ public class UserMessageBuilder {
             pointsOfInterest.forEach(poi -> {
                 userText.append("\n\nAdditionally, check for the following point of interest: ")
                         .append(poi.getRequest())
-                        .append("\nIf found, include details in the pointOfInterestResponse field.");
+                        .append("\nIf a point of interest is detected, include details in the pointsOfInterest field. Separate multiple detections by # symbol.");
             });
         }
 

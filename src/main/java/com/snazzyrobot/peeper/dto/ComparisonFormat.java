@@ -10,5 +10,5 @@ import java.util.List;
 public class ComparisonFormat {
     List<String> comparisons;
     Integer numPersons;
-    String pointOfInterestResponse;
+    List<String> pointsOfInterest;
 }
