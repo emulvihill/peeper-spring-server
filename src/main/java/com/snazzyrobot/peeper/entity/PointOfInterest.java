@@ -8,7 +8,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 @Getter
@@ -48,26 +47,4 @@ public class PointOfInterest extends BaseEntity implements EntityDetails {
 
     @OneToMany(mappedBy = "pointOfInterest", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PointOfInterestPOIAction> pointOfInterestPOIActions = new HashSet<>();
-
-    public void addPOIAction(POIAction poiAction) {
-        PointOfInterestPOIAction pointOfInterestPOIAction = new PointOfInterestPOIAction();
-        pointOfInterestPOIAction.setPointOfInterest(this);
-        pointOfInterestPOIAction.setPoiAction(poiAction);
-        pointOfInterestPOIActions.add(pointOfInterestPOIAction);
-        poiAction.getPointOfInterestPOIActions().add(pointOfInterestPOIAction);
-    }
-
-    public void removePOIAction(POIAction poiAction) {
-        for (Iterator<PointOfInterestPOIAction> iterator = pointOfInterestPOIActions.iterator(); iterator.hasNext();) {
-            PointOfInterestPOIAction pointOfInterestPOIAction = iterator.next();
-
-            if (pointOfInterestPOIAction.getPointOfInterest().equals(this) &&
-                    pointOfInterestPOIAction.getPoiAction().equals(poiAction)) {
-                iterator.remove();
-                pointOfInterestPOIAction.getPoiAction().getPointOfInterestPOIActions().remove(pointOfInterestPOIAction);
-                pointOfInterestPOIAction.setPointOfInterest(null);
-                pointOfInterestPOIAction.setPoiAction(null);
-            }
-        }
-    }
 }

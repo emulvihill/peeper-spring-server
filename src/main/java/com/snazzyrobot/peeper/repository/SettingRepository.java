@@ -1,4 +1,4 @@
-package com.snazzyrobot.peeper.service;
+package com.snazzyrobot.peeper.repository;
 
 import com.snazzyrobot.peeper.entity.Setting;
 import org.springframework.data.jpa.repository.JpaRepository;

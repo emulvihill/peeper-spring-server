@@ -2,6 +2,7 @@ package com.snazzyrobot.peeper.service;
 
 import com.snazzyrobot.peeper.entity.Setting;
 import com.snazzyrobot.peeper.entity.SettingScope;
+import com.snazzyrobot.peeper.repository.SettingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
@@ -12,7 +13,7 @@ import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
-public class SettingsService {
+public class SettingService {
 
     private final SettingRepository settingRepository;
 

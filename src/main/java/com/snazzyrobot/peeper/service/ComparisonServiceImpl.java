@@ -2,22 +2,18 @@ package com.snazzyrobot.peeper.service;
 
 import com.snazzyrobot.peeper.dto.ComparisonFormat;
 import com.snazzyrobot.peeper.entity.CompareProfile;
+import com.snazzyrobot.peeper.entity.PointOfInterest;
 import com.snazzyrobot.peeper.entity.SnapComparison;
 import com.snazzyrobot.peeper.entity.VideoSnap;
-import com.snazzyrobot.peeper.repository.CompareProfileRepository;
-import com.snazzyrobot.peeper.repository.FeedRepository;
-import com.snazzyrobot.peeper.repository.SnapComparisonRepository;
-import com.snazzyrobot.peeper.repository.VideoSnapRepository;
+import com.snazzyrobot.peeper.repository.*;
 import com.snazzyrobot.peeper.utility.PatternUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 @Service
 public class ComparisonServiceImpl implements ComparisonService {
@@ -31,17 +27,19 @@ public class ComparisonServiceImpl implements ComparisonService {
     private final VideoSnapRepository videoSnapRepository;
     private final VisionService visionService;
     private final CompareProfileRepository compareProfileRepository;
+    private final PointOfInterestRepository pointOfInterestRepository;
 
     public ComparisonServiceImpl(VideoSnapRepository videoSnapRepository,
                                  FeedRepository feedRepository,
                                  SnapComparisonRepository snapComparisonRepository,
                                  VisionService visionService,
-                                 CompareProfileRepository compareProfileRepository) {
+                                 CompareProfileRepository compareProfileRepository, PointOfInterestRepository pointOfInterestRepository) {
         this.feedRepository = feedRepository;
         this.snapComparisonRepository = snapComparisonRepository;
         this.videoSnapRepository = videoSnapRepository;
         this.visionService = visionService;
         this.compareProfileRepository = compareProfileRepository;
+        this.pointOfInterestRepository = pointOfInterestRepository;
     }
 
     public SnapComparison compareVideoSnapsById(Long id1, Long id2, String profile) throws IOException {
@@ -53,9 +51,12 @@ public class ComparisonServiceImpl implements ComparisonService {
                 .orElseThrow(() -> new IllegalArgumentException("Compare profile '" + profile + "' not found."));
 
         var snapSequence = getOrderedSnapSequence(id1, id2);
+        List<PointOfInterest> pointsOfInterest = pointOfInterestRepository.findByCompareProfile(compareProfile);
+
         Map.Entry<String, ComparisonFormat> resultEntry = visionService.compareImages(
                 PatternUtil.stripBase64DataUriPrefix(snapSequence.before.getData()),
-                PatternUtil.stripBase64DataUriPrefix(snapSequence.after.getData()));
+                PatternUtil.stripBase64DataUriPrefix(snapSequence.after.getData()),
+                pointsOfInterest);
 
         var rawResult = resultEntry.getKey();
         var result = resultEntry.getValue();
@@ -92,9 +93,5 @@ public class ComparisonServiceImpl implements ComparisonService {
     }
 
     private record SnapSequence(VideoSnap before, VideoSnap after) {
-    }
-
-    private static Stream<String> findValidComparisons(String str) {
-        return Arrays.stream(str.split("\\s*\\*\\*\\*\\s*")).skip(1);
     }
 }

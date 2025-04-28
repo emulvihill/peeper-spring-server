@@ -1,9 +1,6 @@
 package com.snazzyrobot.peeper.configuration;
 
-import com.snazzyrobot.peeper.service.OllamaVisionService;
-import com.snazzyrobot.peeper.service.OpenAIVisionService;
-import com.snazzyrobot.peeper.service.SettingsService;
-import com.snazzyrobot.peeper.service.VisionService;
+import com.snazzyrobot.peeper.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.ollama.OllamaChatModel;
@@ -21,17 +18,20 @@ public class ServiceConfiguration {
     private static final String DEFAULT_COMPARISON_PROVIDER = "openai";
     private static final String DEFAULT_COMPARISON_MODEL = "gpt-4o-mini";
 
-    private final SettingsService settingsService;
+    private final SettingService settingsService;
     private final OpenAiChatModel openAiChatModel;
     private final OllamaChatModel ollamaChatModel;
+    private final UserMessageBuilder userMessageBuilder;
 
     // Constructor to inject dependencies manually
-    public ServiceConfiguration(SettingsService settingsService,
+    public ServiceConfiguration(SettingService settingsService,
                                 OpenAiChatModel openAiChatModel,
-                                OllamaChatModel ollamaChatModel) {
+                                OllamaChatModel ollamaChatModel,
+                                UserMessageBuilder userMessageBuilder) {
         this.settingsService = settingsService;
         this.openAiChatModel = openAiChatModel;
         this.ollamaChatModel = ollamaChatModel;
+        this.userMessageBuilder = userMessageBuilder;
     }
 
     @Bean
@@ -47,9 +47,9 @@ public class ServiceConfiguration {
         logger.info("Creating Vision Service with provider: {} and model: {}", provider, model);
 
         if (Objects.equals(provider, "openai")) {
-            return new OpenAIVisionService(openAiChatModel, model);
+            return new OpenAIVisionService(openAiChatModel, userMessageBuilder, model);
         } else if (Objects.equals(provider, "ollama")) {
-            return new OllamaVisionService(ollamaChatModel, model);
+            return new OllamaVisionService(ollamaChatModel, userMessageBuilder, model);
         }
 
         throw new IllegalArgumentException("Invalid vision provider: " + provider + " & model " + model);
