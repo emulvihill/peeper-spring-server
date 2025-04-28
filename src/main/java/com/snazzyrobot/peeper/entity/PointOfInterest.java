@@ -7,7 +7,9 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -47,4 +49,8 @@ public class PointOfInterest extends BaseEntity implements EntityDetails {
 
     @OneToMany(mappedBy = "pointOfInterest", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<PointOfInterestPOIAction> pointOfInterestPOIActions = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(name = "point_of_interest_poi_action", joinColumns = {@JoinColumn(name = "point_of_interest_id")}, inverseJoinColumns = {@JoinColumn(name = "poi_action_id")})
+    private List<POIAction> actions = new ArrayList<>(0);
 }

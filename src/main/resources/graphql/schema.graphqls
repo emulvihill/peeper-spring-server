@@ -35,6 +35,30 @@ input FeedInput {
     name: String!
 }
 
+type CompareProfile {
+    id: ID!
+    created: String!
+    modified: String!
+    name: String!
+}
+
+type POIAction {
+    id: String!
+    created: String!
+    modified: String!
+    action: String!
+    compareProfile: CompareProfile!
+}
+
+type PointOfInterest {
+    id: ID!
+    created: String!
+    modified: String!
+    request: String!
+    detected: Boolean!
+    compareProfile: CompareProfile!
+    actions: [POIAction]!
+}
 # The Root Query for the application
 type Query {
     compareVideoSnapsById(id1: ID!, id2: ID!, profile: String = "default"): SnapComparison!
@@ -44,6 +68,8 @@ type Query {
     videoSnap(id: ID!): VideoSnap
     feeds: [Feed]!
     feed(id: ID!):Feed
+    compareProfiles: [CompareProfile]!
+    pointsOfInterestForProfile(profileId: ID!): [PointOfInterest]!
 }
 
 # The Root Mutation for the application
