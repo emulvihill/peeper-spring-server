@@ -26,9 +26,9 @@ public class UserMessageBuilder {
 
     @Autowired
     public UserMessageBuilder(CompareProfileRepository compareProfileRepository,
-                             PointOfInterestRepository pointOfInterestRepository,
-                             POIActionRepository poiActionRepository,
-                             PointOfInterestPOIActionRepository pointOfInterestPOIActionRepository) {
+                              PointOfInterestRepository pointOfInterestRepository,
+                              POIActionRepository poiActionRepository,
+                              PointOfInterestPOIActionRepository pointOfInterestPOIActionRepository) {
         this.compareProfileRepository = compareProfileRepository;
         this.pointOfInterestRepository = pointOfInterestRepository;
         this.poiActionRepository = poiActionRepository;
@@ -77,11 +77,11 @@ public class UserMessageBuilder {
 
         // Add points of interest if provided
         if (pointsOfInterest != null) {
+            userText.append("\n\nAdditionally, check for the following points of interest:\n");
             pointsOfInterest.forEach(poi -> {
-                userText.append("\n\nAdditionally, check for the following point of interest: ")
-                        .append(poi.getRequest())
-                        .append("\nIf a point of interest is detected, include details in the pointsOfInterest field. Separate multiple detections by # symbol.");
+                userText.append(poi.getRequest()).append("\n");
             });
+            userText.append("\nIf a point of interest is detected, include details in the pointsOfInterest field.");
         }
 
         return new UserMessage(userText.toString(),
