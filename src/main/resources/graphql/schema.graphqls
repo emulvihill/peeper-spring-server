@@ -79,4 +79,8 @@ type Mutation {
     deleteVideoSnap(id: ID!): Boolean
     createFeed(input: FeedInput!) : Feed!
     deleteFeed(id: ID!): Boolean
+    createPointOfInterest(profileId: ID!, request: String!): PointOfInterest!
+    deletePointOfInterest(id: ID!): Boolean
+    createPOIAction(poiId: ID!, action: String!): POIAction!
+    deletePOIAction(id: ID!): Boolean
 }
